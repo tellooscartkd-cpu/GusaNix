@@ -1,0 +1,9 @@
+{
+  "name": "gusanix-server",
+  "version": "1.0.0",
+  "description": "Servidor de Gusanix: cuentas, guardado en la nube y salas en línea",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ws": "^8.18.0" },
+  "engines": { "node": ">=18" }
+}
