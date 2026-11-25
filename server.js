@@ -29,7 +29,7 @@ function blocked(ip) { const f = fails[ip]; return f && f.n >= 8 && Date.now() -
 function fail(ip) { const f = fails[ip] = fails[ip] && Date.now() - fails[ip].t < 600000 ? fails[ip] : { n: 0, t: Date.now() }; f.n++; }
 
 const server = http.createServer((req, res) => {
-  if (req.url === '/health') { res.end('ok'); return; }
+  if (req.url === '/health') { res.end('ok v4 - IA por sala: ' + NBOT + ' - salas activas: ' + rooms.length); return; }
   if (req.url === '/' || req.url.startsWith('/?') || req.url === '/index.html') {
     fs.readFile(path.join(__dirname, 'index.html'), (e, d) => { if (e) { res.writeHead(404); res.end('Falta index.html'); } else { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(d); } });
     return;
@@ -38,7 +38,7 @@ const server = http.createServer((req, res) => {
 });
 
 // ---------- Mundo compartido por sala: bots IA (30), comida y poderes ----------
-const WS = 7200, C = 3600, R = 3500, NBOT = +process.env.NBOT || 30, NPOW = 24;
+const WS = 7200, C = 3600, R = 3500, NBOT = process.env.NBOT !== undefined && process.env.NBOT !== '' ? Math.max(0, +process.env.NBOT || 0) : 30, NPOW = 24;
 const rad = w => 8 + Math.sqrt(w.m) * .55, nseg = w => Math.min(260, Math.floor(10 + w.m * .25));
 const rnd = (a, b) => a + Math.random() * (b - a);
 const rp = m => { const a = Math.random() * 6.283, d = Math.sqrt(Math.random()) * (R - m); return [C + Math.cos(a) * d, C + Math.sin(a) * d]; };
@@ -50,7 +50,7 @@ for (let c = 0; c < 1600; c++) {   // misma fórmula que el cliente
   const v = EMOV[(h >>> 16) % 8], f = { id: 'c' + c, x, y, v, sz: 7 + v * 1.8 }; cells.push(f); cellById[f.id] = f;
 }
 const BN = ['Pipo','Lola','Gusi','Max','Nube','Rayo','Kiwi','Toby','Luna','Zeta','Coco','Bimbo','Fufi','Tito','Nina','Bruno','Chispa','Mango','Pelusa','Tango'];
-const PK = [[2, 1], [4, 1], [5, 3], [6, 3], [7, 3], [8, 3], [9, 1.5], [10, .7]];   // sin mordisco, escarcha ni torbellino
+const PK = [[0, 3], [1, 3], [2, 3], [3, 3], [4, 1.5], [5, .7], [6, 1], [7, 1], [8, 1.5], [9, 1]];   // 0 velocidad, 1 aspiradora, 2 lupa, 3-5 puntos x2/x5/x10, 6 jardín, 7 piñata, 8 escudo, 9 manos (sin mordisco en línea)
 function chain(w) {
   const s = w.segs, sd = rad(w) * .5;
   for (let i = 1; i < s.length; i++) { const a = s[i - 1], b = s[i], dx = a.x - b.x, dy = a.y - b.y, d = Math.hypot(dx, dy) || 1; if (d > sd) { b.x = a.x - dx / d * sd; b.y = a.y - dy / d * sd; } }
@@ -95,11 +95,20 @@ function eatB(r, b, now) {
   for (const c of cells) { if (Math.abs(h.x - c.x) > 60 || Math.abs(h.y - c.y) > 60 || (r.off.get(c.id) || 0) > now) continue; const dx = h.x - c.x, dy = h.y - c.y; if (dx * dx + dy * dy < (rr + c.sz * .4 + 4) ** 2) { b.m += c.v; r.off.set(c.id, now + 25000); rec(b, c.id); } }
   for (const [id, o] of r.orbs) { if (Math.abs(h.x - o.x) > 60 || Math.abs(h.y - o.y) > 60) continue; const dx = h.x - o.x, dy = h.y - o.y; if (dx * dx + dy * dy < (rr + o.sz * .4 + 4) ** 2) { b.m += o.v; o.gone = 1; r.orbs.delete(id); rec(b, id); } }
 }
+const angd = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
+function loses(a, b) {
+  const A = a.segs[0], B = b.segs[0], g = Math.atan2(B.y - A.y, B.x - A.x), ga = Math.abs(angd(a.ang, g)), gb = Math.abs(angd(b.ang, g + Math.PI));
+  if (Math.abs(ga - gb) >= .349) return ga > gb;
+  const ia = String(a.id), ib = String(b.id), k = (ia < ib ? ia + '|' + ib : ib + '|' + ia) + Math.round((A.x + B.x) / 1000) + Math.round((A.y + B.y) / 1000);
+  let s = 0; for (let i = 0; i < k.length; i++) s = (s * 31 + k.charCodeAt(i)) >>> 0;
+  return (s & 1) ? ia < ib : ia >= ib;
+}
 function hitB(b, W) {
   const h = b.segs[0], rr = rad(b); if (Math.hypot(h.x - C, h.y - C) > R - rr) return { by: null };
   for (const o of W) {
     if (o === b) continue; const or = rad(o), lim = rr * .7 + or * .8, oh = o.segs[0], reach = lim + o.segs.length * or * .5 + 10;
     if (Math.abs(h.x - oh.x) > reach || Math.abs(h.y - oh.y) > reach) continue;
+    if (Math.hypot(h.x - oh.x, h.y - oh.y) < lim) { if (o.human) continue; if (loses(b, o)) return { by: o.id }; continue; }
     for (let i = 0; i < o.segs.length; i += 2) { const s = o.segs[i], dx = h.x - s.x, dy = h.y - s.y; if (dx * dx + dy * dy < lim * lim) return { by: o.id }; }
   }
   return null;
@@ -119,8 +128,9 @@ function simulate(r, now) {
   for (const [id, e] of r.peers) {   // cuerpos de jugadores reconstruidos desde la cabeza
     const g = e.g; if (!g || !g.al) { e.bd = null; continue; }
     const x = +g.x || 0, y = +g.y || 0; if (!e.bd) e.bd = { id, m: 10, segs: [{ x, y }] };
-    const bd = e.bd; bd.m = Math.min(5000, Math.max(10, +g.m || 10)); const h = bd.segs[0];
-    if ((h.x - x) ** 2 + (h.y - y) ** 2 > 250000) { h.x = x; h.y = y; } else { h.x += (x - h.x) * .5; h.y += (y - h.y) * .5; }
+    const bd = e.bd; bd.human = 1; bd.ang = +g.a || 0; bd.m = Math.min(5000, Math.max(10, +g.m || 10)); const h = bd.segs[0];
+    const ex = (g.b ? 4.6 : 2.7) * 8, tx = x + Math.cos(bd.ang) * ex, ty = y + Math.sin(bd.ang) * ex;
+    if ((h.x - tx) ** 2 + (h.y - ty) ** 2 > 250000) { h.x = tx; h.y = ty; } else { h.x += (tx - h.x) * .7; h.y += (ty - h.y) * .7; }
     chain(bd); W.push(bd);
   }
   for (const b of r.bots) if (b.alive) W.push(b);
@@ -157,6 +167,7 @@ function onPres(r, id, e, g, now) {
   if (g.al) e.dead = 0;
 }
 
+const sStart = n => Date.UTC(2026, 11 + n - 1, 1, 5), SEASKIN = { 1: 9 };   // temporada 1 = diciembre 2026 (hora de Bogotá)
 const rooms = [];            // salas: humanos + 30 bots IA compartidos
 const online = new Map();    // usuario -> ws (una sesión de juego por cuenta)
 const send = (ws, m) => { if (ws.readyState === 1) ws.send(JSON.stringify(m)); };
@@ -170,7 +181,7 @@ function leave(ws) {
 const wss = new WebSocketServer({ server, maxPayload: 16384 });
 wss.on('connection', (ws, req) => {
   const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
-  ws.id = rid(4); ws.u = null; ws.room = null; ws.n = 0; ws.lt = Date.now();
+  ws.id = 'h' + rid(4); ws.u = null; ws.room = null; ws.n = 0; ws.lt = Date.now();
   ws.on('message', raw => {
     const now = Date.now(); if (now - ws.lt > 1000) { ws.lt = now; ws.n = 0; } if (++ws.n > 40) return;
     let m; try { m = JSON.parse(raw); } catch (e) { return; }
@@ -211,7 +222,18 @@ wss.on('connection', (ws, req) => {
       case 'out': { const h = sha(String(m.tok || '')), k = TOK[h]; if (k) { delete TOK[h]; DB.users[k].toks = (DB.users[k].toks || []).filter(x => x !== h); saveDB(); } leave(ws); ws.u = null; break; }
       case 'save': {
         if (!ws.u) return; const s = JSON.stringify(m.data || null);
-        if (s.length > 20000) return; DB.users[ws.u.toLowerCase()].data = JSON.parse(s); saveDB(); break;
+        if (s.length > 20000) return;
+        const U = DB.users[ws.u.toLowerCase()], now = Date.now(), nd = JSON.parse(s), old = (U.data && U.data.SV) || {};
+        if (nd && nd.SV && typeof nd.SV === 'object') {
+          const v = nd.SV; v.sT = v.sT && typeof v.sT === 'object' ? v.sT : {}; v.sB = v.sB && typeof v.sB === 'object' ? v.sB : {};
+          v.own = Array.isArray(v.own) ? v.own.filter(x => Number.isInteger(x)) : [0, 1, 2]; v.claimed = Array.isArray(v.claimed) ? v.claimed.filter(x => typeof x === 'string') : [];
+          const wall = U.lastSave ? (now - U.lastSave) / 1000 + 90 : 86400;   // el tiempo acreditado no puede superar el tiempo real transcurrido
+          for (const n of Object.keys(v.sT)) { const o = (old.sT && +old.sT[n]) || 0; let x = +v.sT[n] || 0; x = Math.min(x, Math.max(0, (now - sStart(+n)) / 1000), o + wall); v.sT[n] = x > 0 ? Math.round(x) : 0; }
+          for (const n of Object.keys(v.sB)) { let x = Math.min(+v.sB[n] || 0, 3600, v.sT[n] || 0); v.sB[n] = x > 0 ? Math.round(x) : 0; }
+          for (const n in SEASKIN) { const sk = SEASKIN[n]; if (v.own.includes(sk) && (v.sT[n] || 0) + (v.sB[n] || 0) < 14400 - 60) { v.own = v.own.filter(x => x !== sk); v.claimed = v.claimed.filter(x => x !== 's' + n + 'c10'); if (nd.skin && nd.skin.p === sk) nd.skin.p = 0; } }
+          U.lastSave = now;
+        }
+        U.data = nd; saveDB(); break;
       }
       case 'join': {
         if (!ws.u) return send(ws, { t: 'err', m: 'Inicia sesión para jugar en línea' });
@@ -221,6 +243,37 @@ wss.on('connection', (ws, req) => {
         let r = rooms.find(x => x.peers.size < MAX_ROOM); if (!r) { r = mkRoom(); rooms.push(r); }
         r.peers.set(ws.id, { ws, g: null, pg: null, lq: 0, bd: null, dead: 0 }); ws.room = r;
         send(ws, { t: 'joined', me: ws.id });
+        break;
+      }
+      case 'claim': {
+        const r = ws.room, e = r && r.peers.get(ws.id); if (!e || !e.g || !e.g.al || !e.bd) return;
+        const now = Date.now(), v = String(m.v || ''); if (e.killedAt && now - e.killedAt < 900) return;
+        const near = (x, y, rr) => { const lim = rr * .7 + rad(e.bd) * .8 + 110; for (let i = 3; i < e.bd.segs.length; i += 2) { const s = e.bd.segs[i], dx = x - s.x, dy = y - s.y; if (dx * dx + dy * dy < lim * lim) return true; } return false; };
+        const bot = r.bots.find(b => b.id === v);
+        if (bot) { if (bot.alive && near(bot.segs[0].x, bot.segs[0].y, rad(bot))) killB(r, bot, ws.id); break; }
+        const ve = r.peers.get(v); if (!ve || !ve.g || !ve.g.al || ve.dead || (ve.killedAt && now - ve.killedAt < 900) || (ve.brkAt && now - ve.brkAt < 1500) || !ve.bd) break;
+        if (near(ve.bd.segs[0].x, ve.bd.segs[0].y, rad(ve.bd))) { ve.killedAt = now; send(ve.ws, { t: 'killed', by: ws.id }); }
+        break;
+      }
+      case 'hit': {
+        const r = ws.room, e = r && r.peers.get(ws.id); if (!e || !e.g || !e.g.al || !e.bd || e.dead) return;
+        const now = Date.now(), v = String(m.v || ''); if (e.killedAt && now - e.killedAt < 900) return; if (e.brkAt && now - e.brkAt < 1500) return;
+        const ve = r.peers.get(v);
+        if (!ve || (ve.killedAt && now - ve.killedAt < 900)) return; // el otro ya murió: yo sobrevivo
+        if (!ve.bd) return;
+        const lim = rad(ve.bd) * .8 + rad(e.bd) * .7 + 70, h = e.bd.segs[0];
+        let ok = false; for (let i = 0; i < ve.bd.segs.length && !ok; i += 2) { const s = ve.bd.segs[i], dx = h.x - s.x, dy = h.y - s.y; if (dx * dx + dy * dy < lim * lim) ok = true; }
+        if (!ok) return;
+        e.killedAt = now; send(ws, { t: 'killed', by: v });
+        break;
+      }
+      case 'brk': {   // un gusano atrapado más grande rompe el anillo del que lo rodea
+        const r = ws.room, e = r && r.peers.get(ws.id); if (!e || !e.g || !e.g.al || !e.bd) return;
+        const now = Date.now(); if (e.brkAt && now - e.brkAt < 800) return;
+        const ve = r.peers.get(String(m.v || '')); if (!ve || !ve.g || !ve.g.al || !ve.bd) return;
+        const lim = rad(ve.bd) * .8 + rad(e.bd) * .7 + 90, h = e.bd.segs[0]; let ok = false;
+        for (let i = 0; i < ve.bd.segs.length && !ok; i += 2) { const q = ve.bd.segs[i], dx = h.x - q.x, dy = h.y - q.y; if (dx * dx + dy * dy < lim * lim) ok = true; }
+        if (!ok) return; e.brkAt = now; send(ve.ws, { t: 'cut', i: Math.max(2, Math.min(260, +m.i || 6)), by: ws.id });
         break;
       }
       case 'sync': if (ws.room) snapshot(ws.room, ws, Date.now()); break;
