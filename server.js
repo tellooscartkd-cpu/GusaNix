@@ -70,17 +70,34 @@ function mkRoom() { const r = { peers: new Map(), bots: [], orbs: new Map(), off
 const isGone = (r, f, now) => f.o ? !!f.gone : (r.off.get(f.id) || 0) > now;
 function aiB(r, b, now, W) {
   const h = b.segs[0], rr = rad(b); b.tmr++;
+  if (b.agg == null) b.agg = Math.random() < .5 ? 1 : 0;
+  if (!b.wp || Math.hypot(b.wp.x - h.x, b.wp.y - h.y) < 260 || b.tmr % 900 == 0) { const q = rp(350); b.wp = { x: q[0], y: q[1] }; }
   if (b.tgt) { b.tt++; const g = b.tgt; if (b.tt > 140 || (b.tt > 30 && Math.hypot(g.x - h.x, g.y - h.y) < 170)) { r.ig.set(g.id, now + 15000); b.tgt = null; b.tt = 0; } }
   if (!b.tgt || isGone(r, b.tgt, now) || b.tmr % 15 == 0) {
-    let best = -1, bf = null;
-    const test = f => { if ((r.ig.get(f.id) || 0) > now || Math.hypot(f.x - C, f.y - C) > R - 140) return; const dx = f.x - h.x, dy = f.y - h.y, s = f.v * (f.o ? 3 : 1) / (Math.sqrt(dx * dx + dy * dy) + 60); if (s > best) { best = s; bf = f; } };
+    let best = -1, bf = null; const RA = 650 + rr * 5;
+    const test = f => { if ((r.ig.get(f.id) || 0) > now || Math.hypot(f.x - C, f.y - C) > R - 140) return; const dx = f.x - h.x, dy = f.y - h.y; if (Math.abs(dx) > RA || Math.abs(dy) > RA) return; const s = f.v * (f.o ? 3 : 1) / (Math.sqrt(dx * dx + dy * dy) + 60); if (s > best) { best = s; bf = f; } };
     for (const c of cells) if ((r.off.get(c.id) || 0) <= now) test(c);
     for (const o of r.orbs.values()) test(o);
     if (bf !== b.tgt) b.tt = 0; b.tgt = bf;
   }
-  const tg = b.tgt; let vx = Math.cos(b.ang) * .3, vy = Math.sin(b.ang) * .3;
-  if (tg) { const dx = tg.x - h.x, dy = tg.y - h.y, d = Math.hypot(dx, dy) || 1; vx += dx / d; vy += dy / d; }
+  // caza: los agresivos buscan cerrarle el paso a un gusano cercano que no sea más grande
+  if (b.hunt && (b.hunt.until < now || !W.includes(b.hunt.o) || b.hunt.o.alive === 0)) b.hunt = null;
+  if (b.agg && !b.hunt && b.tmr % 20 == 0 && Math.random() < .35) {
+    let bo = null, bd = 760;
+    for (const o of W) { if (o === b || o.m > b.m * 1.15) continue; const d = Math.hypot(o.segs[0].x - h.x, o.segs[0].y - h.y) * (o.human ? .7 : 1); if (d < bd) { bd = d; bo = o; } }
+    if (bo) b.hunt = { o: bo, until: now + 6000 };
+  }
+  let vx = Math.cos(b.ang) * .3, vy = Math.sin(b.ang) * .3;
+  if (b.hunt) {
+    const o = b.hunt.o, oh = o.segs[0], d0 = Math.hypot(oh.x - h.x, oh.y - h.y), lead = Math.min(480, d0 * .8 + rad(o) * 4), tx = oh.x + Math.cos(o.ang || 0) * lead, ty = oh.y + Math.sin(o.ang || 0) * lead, dx = tx - h.x, dy = ty - h.y, d = Math.hypot(dx, dy) || 1;
+    vx += dx / d * 2; vy += dy / d * 2;
+  } else if (b.tgt) { const tg = b.tgt, dx = tg.x - h.x, dy = tg.y - h.y, d = Math.hypot(dx, dy) || 1; vx += dx / d; vy += dy / d; }
+  else { const dx = b.wp.x - h.x, dy = b.wp.y - h.y, d = Math.hypot(dx, dy) || 1; vx += dx / d * 1.2; vy += dy / d * 1.2; }
   { const dx = h.x - C, dy = h.y - C, d = Math.hypot(dx, dy) || 1, e = R - d; if (e < 170) { const k = (1 - e / 170) * 3; vx -= dx / d * k; vy -= dy / d * k; } }
+  for (const o of W) {   // separación suave entre bots para que se repartan por el mapa
+    if (o === b || o.human) continue; const oh = o.segs[0], dx = h.x - oh.x, dy = h.y - oh.y, d2 = dx * dx + dy * dy;
+    if (d2 < 520 * 520 && !(b.hunt && b.hunt.o === o)) { const d = Math.sqrt(d2) || 1, k = (1 - d / 520) * 1.1; vx += dx / d * k; vy += dy / d * k; }
+  }
   for (const o of W) {
     if (o === b) continue; const or = rad(o), oh = o.segs[0], D = rr + or + 110, reach = o.segs.length * or * .5 + D;
     if (Math.abs(h.x - oh.x) > reach || Math.abs(h.y - oh.y) > reach) continue;
