@@ -207,11 +207,11 @@ document.querySelectorAll('#rmode button').forEach((b,i)=>b.classList.toggle('on
 $('#asub').textContent=['Entrar','Crear cuenta','Cambiar contraseña'][atab];$('#ap').placeholder=atab==2?'Nueva contraseña (mín. 6)':'Contraseña (mín. 6)';document.querySelectorAll('#tabs button').forEach((b,i)=>b.classList.toggle('on',i==atab));
 if(li){$('#ct').innerHTML=ctm?(ctv?'✅ Recuperación por SMS activa<br><b>'+esc(ctm)+'</b>':'⏳ Falta confirmar el celular. Escribe el código que te llegó por SMS.'):(fbConf?'⏳ Escribe el código que te llegó por SMS.':'🔒 Añade tu celular para poder recuperar tu cuenta si olvidas la contraseña.');
 const pend=!!fbConf;$('#cc').classList.toggle('hide',!pend);$('#cok').classList.toggle('hide',!pend);$('#cdel').classList.toggle('hide',!ctm);$('#ce').classList.toggle('hide',!!ctm&&ctv);$('#cset').classList.toggle('hide',!!ctm&&ctv);$('#cset').textContent=pend?'Reenviar código / cambiar':'Vincular celular'}}
-function openAcc(){welDone=true;$('#wel').classList.add('hide');$('#acc').classList.remove('hide');$('#menu').classList.add('hide');$('#am').textContent='';accUI()}
-function closeAcc(){$('#acc').classList.add('hide');$('#menu').classList.remove('hide');ui()}
+let accFrom='m';function openAcc(f){accFrom=f==='w'?'w':'m';welDone=true;$('#wel').classList.add('hide');$('#acc').classList.remove('hide');$('#menu').classList.add('hide');$('#am').textContent='';accUI()}
+function closeAcc(){$('#acc').classList.add('hide');if(accFrom==='w'){welDone=false;showWel();return}$('#menu').classList.remove('hide');ui()}
 document.querySelectorAll('#tabs button').forEach((b,i)=>b.onclick=()=>{atab=i;$('#am').textContent='';accUI()});
 document.querySelectorAll('#rmode button').forEach((b,i)=>b.onclick=()=>{rmode=i;$('#am').textContent='';accUI()});
-$('#accb').onclick=openAcc;$('#ax').onclick=closeAcc;
+$('#accb').onclick=()=>openAcc('m');$('#ax').onclick=closeAcc;
 $('#alo').onclick=()=>{send({t:'out',tok});user=null;acct='';tok='';try{localStorage.removeItem('gusanix_tok')}catch(e){}if(ws)ws.au=0;accUI();ui()};
 $('#asub').onclick=async()=>{const u=$('#au').value.trim(),p=$('#ap').value,am=$('#am');am.textContent='Conectando...';try{await connect();const m=await req(atab==0?{t:'login',u,p}:atab==1?{t:'reg',u,p}:rmode==1?{t:'rfb',u,idt:await fbTokenR(),p}:{t:'rec',u,rc:$('#ar').value.trim(),p});if(m.t=='err'){am.textContent=m.m;return}applyAuth(m);$('#ap').value='';let pendPh=false;if(atab==1&&$('#ae').value.trim()){try{fbConf=await fbSend($('#ae').value);pendPh=true}catch(e){am.textContent=fbErr(e)}}if(atab==2){fbConf=null;rconf=null}accUI();if(m.rc){am.innerHTML='✅ Cuenta lista.<br><b style="font-size:20px;color:#ffd23f">'+esc(m.rc)+'</b><br>Este es tu código de recuperación. Guárdalo (captura o papel): sin él no podrás recuperar la cuenta si olvidas la contraseña.'+(pendPh?'<br>📨 Te enviamos un SMS. Escribe el código abajo para activar la recuperación por celular.':'')}else{am.textContent='';closeAcc()}}catch(e){am.textContent=e&&e.message=='nosms'?'Primero toca "Enviar código por SMS"':e&&e.code?fbErr(e):'No se pudo conectar al servidor.'}};
 const FBCFG={apiKey:"AIzaSyAolZQqeiLPqXbSSK3v0_ZS-FfsiVOxm7s",authDomain:"gusanix-b5829.firebaseapp.com",projectId:"gusanix-b5829",appId:"1:925172695912:web:0ea551906a973e3da98cdd"};
@@ -562,7 +562,7 @@ q=wg.createRadialGradient(W/2,H*.55,Math.min(W,H)*.35,W/2,H*.55,Math.max(W,H)*.8
 function welUI(){const li=!!user;$('#wlogd').classList.toggle('hide',!li);$('#wgst').classList.toggle('hide',li);$('#whi').classList.toggle('hide',!li);$('#whi').textContent='Hola, '+(user||'')+' 👋';document.querySelector('#wel .how').classList.toggle('hide',li)}
 function showWel(){if(welDone)return;welUI();$('#menu').classList.add('hide');$('#wel').classList.remove('hide');wseas();if(!wRaf)wRaf=requestAnimationFrame(wdraw)}
 function hideWel(){welDone=true;$('#wel').classList.add('hide');if(state==='menu')$('#menu').classList.remove('hide');ui()}
-$('#wl').onclick=()=>{atab=0;openAcc()};$('#wc').onclick=()=>{atab=1;openAcc()};$('#wr').onclick=()=>{atab=2;openAcc()};$('#wg').onclick=()=>{hideWel();play()};$('#wo').onclick=()=>{hideWel();$('#onl').click()};$('#wm').onclick=hideWel;
+$('#wl').onclick=()=>{atab=0;openAcc('w')};$('#wc').onclick=()=>{atab=1;openAcc('w')};$('#wr').onclick=()=>{atab=2;openAcc('w')};$('#wg').onclick=()=>{hideWel();play()};$('#wo').onclick=()=>{hideWel();$('#onl').click()};$('#wm').onclick=hideWel;
 ui();applyCtrl();cloudInit().then(()=>{if(!welDone)welUI()});showWel();requestAnimationFrame(frame);
 let bgT=0;setInterval(()=>{if(!document.hidden){bgT=0;return}const n=performance.now();if(!bgT){bgT=n;return}const k=Math.min(3600,Math.floor((n-bgT)/16.667));bgT+=k*16.667;for(let i=0;i<k;i++)step()},500);
 </script></body></html>
