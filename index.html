@@ -73,7 +73,9 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 <button id="snd" class="p" aria-label="Sonido">🔊</button>
 <div id="jy" class="hide"><i></i></div><div id="tut" class="hide"><span id="tutx"></span><button id="tuts">Omitir</button></div>
 <div id="wel" class="scr hide"><canvas id="wh"></canvas><div class="wbox"><h1 id="wt" aria-label="GUSANIX"></h1><div class="wsub">Arena de gusanos · comida colombiana</div><div id="wseas"></div>
-<button class="btn" id="wg">▶ Jugar</button><button class="btn s l" id="wl">🔑 Ya tengo cuenta · Iniciar sesión</button><div class="wrow"><button class="btn s" id="wc">Crear cuenta</button><button class="btn s" id="wr">Olvidé mi contraseña</button></div>
+<div id="whi" class="wsub hide"></div><button class="btn" id="wg">▶ Jugar</button>
+<div id="wlogd" class="hide"><button class="btn s l" id="wo" style="background:linear-gradient(180deg,#7fdcff,#4361ee);box-shadow:0 5px 0 #243a9a,0 10px 16px #000a,inset 0 2px 0 #fff5">🌐 Jugar en línea</button><button class="btn s l" id="wm">🎨 Apariencia · Tienda · Cuenta</button></div>
+<div id="wgst"><button class="btn s l" id="wl">🔑 Ya tengo cuenta · Iniciar sesión</button><div class="wrow"><button class="btn s" id="wc">Crear cuenta</button><button class="btn s" id="wr">Olvidé mi contraseña</button></div></div>
 <div class="how">Con cuenta guardas tu progreso, juegas en línea y sumas tiempo para la piel de la temporada. Con “Jugar” entras sin cuenta y juegas solo; usa la copia de seguridad para no perder tu avance.</div></div></div>
 <div id="how" class="scr hide"><div class="card gd" style="width:min(520px,100%)"><h1 style="font-size:32px;text-align:center">¿Cómo se juega?</h1>
 <h3>Objetivo</h3><p>Come para crecer y llega al top 1. Mientras más grande, más puntos.</p>
@@ -557,9 +559,10 @@ for(const o of objs){const z=o.d,fy=hz+(H-hz)*(.12+z*.8);
   wg.save();wg.translate(wx,fy-26*k-Math.abs(Math.sin(tt*3+w.ph))*4*k);wg.scale(dir*k,k);wg.translate(-0,0);pvW(wg,sxs,13,w.c,w.p,w.ax);wg.restore()}}
 // viñeta
 q=wg.createRadialGradient(W/2,H*.55,Math.min(W,H)*.35,W/2,H*.55,Math.max(W,H)*.8);q.addColorStop(0,'#0000');q.addColorStop(1,'#000a');wg.fillStyle=q;wg.fillRect(0,0,W,H)}
-function showWel(){if(welDone||user)return;$('#menu').classList.add('hide');$('#wel').classList.remove('hide');wseas();if(!wRaf)wRaf=requestAnimationFrame(wdraw)}
+function welUI(){const li=!!user;$('#wlogd').classList.toggle('hide',!li);$('#wgst').classList.toggle('hide',li);$('#whi').classList.toggle('hide',!li);$('#whi').textContent='Hola, '+(user||'')+' 👋';document.querySelector('#wel .how').classList.toggle('hide',li)}
+function showWel(){if(welDone)return;welUI();$('#menu').classList.add('hide');$('#wel').classList.remove('hide');wseas();if(!wRaf)wRaf=requestAnimationFrame(wdraw)}
 function hideWel(){welDone=true;$('#wel').classList.add('hide');if(state==='menu')$('#menu').classList.remove('hide');ui()}
-$('#wl').onclick=()=>{atab=0;openAcc()};$('#wc').onclick=()=>{atab=1;openAcc()};$('#wr').onclick=()=>{atab=2;openAcc()};$('#wg').onclick=()=>{hideWel();play()};
-ui();applyCtrl();cloudInit().then(()=>{if(user&&!welDone)hideWel()});setTimeout(()=>{if(user)hideWel();else showWel()},1200);requestAnimationFrame(frame);
+$('#wl').onclick=()=>{atab=0;openAcc()};$('#wc').onclick=()=>{atab=1;openAcc()};$('#wr').onclick=()=>{atab=2;openAcc()};$('#wg').onclick=()=>{hideWel();play()};$('#wo').onclick=()=>{hideWel();$('#onl').click()};$('#wm').onclick=hideWel;
+ui();applyCtrl();cloudInit().then(()=>{if(!welDone)welUI()});setTimeout(showWel,1200);requestAnimationFrame(frame);
 let bgT=0;setInterval(()=>{if(!document.hidden){bgT=0;return}const n=performance.now();if(!bgT){bgT=n;return}const k=Math.min(3600,Math.floor((n-bgT)/16.667));bgT+=k*16.667;for(let i=0;i<k;i++)step()},500);
 </script></body></html>
