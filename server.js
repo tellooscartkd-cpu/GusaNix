@@ -95,7 +95,7 @@ async function fbVerify(idt, kind) {
 const server = http.createServer((req, res) => {
   if (req.url === '/health') { res.end('ok v4 - IA por sala: ' + NBOT + ' - salas activas: ' + rooms.length); return; }
   if (req.url === '/' || req.url.startsWith('/?') || req.url === '/index.html') {
-    fs.readFile(path.join(__dirname, 'index.html'), (e, d) => { if (e) { res.writeHead(404); res.end('Falta index.html'); } else { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(d); } });
+    fs.readFile(path.join(__dirname, 'index.html'), (e, d) => { if (e) { res.writeHead(404); res.end('Falta index.html'); } else { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache, must-revalidate' }); res.end(d); } });
     return;
   }
   res.writeHead(404); res.end('No encontrado');
@@ -171,7 +171,7 @@ function aiB(r, b, now, W) {
 }
 function mv(b) {
   const d = b.tang - b.ang, df = Math.atan2(Math.sin(d), Math.cos(d)), tr = .11 / (1 + rad(b) * .02);
-  b.ang += Math.max(-tr, Math.min(tr, df)); const h = b.segs[0]; h.x += Math.cos(b.ang) * 2.7; h.y += Math.sin(b.ang) * 2.7; chain(b);
+  b.ang += Math.max(-tr, Math.min(tr, df)); const h = b.segs[0]; const k = Math.max(.7, 1 / (1 + Math.max(0, rad(b) - 10) * .008)); h.x += Math.cos(b.ang) * 2.7 * k; h.y += Math.sin(b.ang) * 2.7 * k; chain(b);
 }
 function rec(b, id) { b.e.push([id, ++b.q]); if (b.e.length > 12) b.e.shift(); b.ne = 1; }
 function eatB(r, b, now) {
