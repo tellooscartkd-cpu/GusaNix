@@ -28,6 +28,45 @@ const fails = {};
 function blocked(ip) { const f = fails[ip]; return f && f.n >= 8 && Date.now() - f.t < 600000; }
 function fail(ip) { const f = fails[ip] = fails[ip] && Date.now() - fails[ip].t < 600000 ? fails[ip] : { n: 0, t: Date.now() }; f.n++; }
 
+
+// ---------- Recuperación por correo / SMS ----------
+// Correo: RESEND_KEY + MAIL_FROM (resend.com).  SMS: TWILIO_SID + TWILIO_TOKEN + TWILIO_FROM (twilio.com).
+// Sin claves: el código sale solo en la consola del servidor (modo pruebas; GX_DEV=1 lo devuelve también al cliente).
+const https = require('https');
+process.on('unhandledRejection', e => console.log('Error no controlado:', e && e.message));
+const CODES = {}, sendLog = {};
+const normCt = s => { s = String(s || '').trim(); if (/^[^\s@]{1,64}@[^\s@]{1,190}\.[A-Za-z]{2,}$/.test(s) && s.length <= 254) return { k: 'e', v: s.toLowerCase() }; const d = s.replace(/[^\d+]/g, ''); if (/^\+\d{8,15}$/.test(d)) return { k: 'p', v: d }; return null; };
+const maskCt = c => !c ? '' : c.k === 'e' ? c.v.replace(/^(.).*(@.*)$/, (m, a, b) => a + '***' + b) : c.v.slice(0, 3) + '*****' + c.v.slice(-2);
+function postJSON(host, pth, headers, body) {
+  return new Promise((ok, no) => { const d = typeof body === 'string' ? body : JSON.stringify(body);
+    const r = https.request({ host, path: pth, method: 'POST', headers: Object.assign({ 'Content-Length': Buffer.byteLength(d) }, headers) }, res => { let o = ''; res.on('data', c => o += c); res.on('end', () => res.statusCode < 300 ? ok(o) : no(new Error(host + ' ' + res.statusCode + ' ' + o.slice(0, 200)))); });
+    r.on('error', no); r.setTimeout(10000, () => r.destroy(new Error('timeout'))); r.end(d); });
+}
+async function deliver(c, code) {
+  const txt = 'Tu código de Gusanix es ' + code + '. Vence en 10 minutos. Si no lo pediste, ignóralo.';
+  if (c.k === 'e' && process.env.RESEND_KEY) { await postJSON('api.resend.com', '/emails', { 'Authorization': 'Bearer ' + process.env.RESEND_KEY, 'Content-Type': 'application/json' }, { from: process.env.MAIL_FROM || 'Gusanix <onboarding@resend.dev>', to: [c.v], subject: 'Código de Gusanix: ' + code, text: txt }); return true; }
+  if (c.k === 'p' && process.env.TWILIO_SID && process.env.TWILIO_TOKEN && process.env.TWILIO_FROM) {
+    await postJSON('api.twilio.com', '/2010-04-01/Accounts/' + process.env.TWILIO_SID + '/Messages.json', { 'Authorization': 'Basic ' + Buffer.from(process.env.TWILIO_SID + ':' + process.env.TWILIO_TOKEN).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' }, new URLSearchParams({ To: c.v, From: process.env.TWILIO_FROM, Body: txt }).toString()); return true; }
+  console.log('[MODO PRUEBAS] código para ' + c.v + ': ' + code); return false;
+}
+// envía un código (propósito 'v' = verificar contacto, 'r' = recuperar). Devuelve {ok,wait,dev}
+async function sendCode(key, purpose, c, ip) {
+  const now = Date.now(), L = sendLog[ip] = (sendLog[ip] || []).filter(x => now - x < 600000);
+  if (L.length >= 6) return { wait: 1 };
+  const id = purpose + ':' + key, old = CODES[id]; if (old && now - old.t < 60000) return { wait: 1 };
+  const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0'); L.push(now);
+  CODES[id] = { h: sha(code + id), exp: now + 600000, t: now, n: 0, c };
+  let real = false; try { real = await deliver(c, code); } catch (e) { console.log('Error enviando código:', e.message); }
+  return { ok: 1, dev: process.env.GX_DEV === '1' ? code : undefined, real };
+}
+function checkCode(key, purpose, code) {
+  const id = purpose + ':' + key, o = CODES[id]; if (!o || Date.now() > o.exp) { delete CODES[id]; return null; }
+  if (++o.n > 5) { delete CODES[id]; return null; }
+  if (!same(o.h, sha(String(code || '').replace(/\D/g, '') + id))) return null;
+  delete CODES[id]; return o.c;
+}
+setInterval(() => { const n = Date.now(); for (const k in CODES) if (n > CODES[k].exp) delete CODES[k]; }, 300000).unref();
+
 const server = http.createServer((req, res) => {
   if (req.url === '/health') { res.end('ok v4 - IA por sala: ' + NBOT + ' - salas activas: ' + rooms.length); return; }
   if (req.url === '/' || req.url.startsWith('/?') || req.url === '/index.html') {
@@ -50,7 +89,7 @@ for (let c = 0; c < 1600; c++) {   // misma fórmula que el cliente
   const v = EMOV[(h >>> 16) % 8], f = { id: 'c' + c, x, y, v, sz: 7 + v * 1.8 }; cells.push(f); cellById[f.id] = f;
 }
 const BN = ['Pipo','Lola','Gusi','Max','Nube','Rayo','Kiwi','Toby','Luna','Zeta','Coco','Bimbo','Fufi','Tito','Nina','Bruno','Chispa','Mango','Pelusa','Tango'];
-const PK = [[0, 3], [1, 3], [2, 3], [3, 3], [4, 1.5], [5, .7], [6, 1], [7, 1], [8, 1.5], [9, 1]];   // 0 velocidad, 1 aspiradora, 2 lupa, 3-5 puntos x2/x5/x10, 6 jardín, 7 piñata, 8 escudo, 9 manos (sin mordisco en línea)
+const PK = [[0, 3], [1, 3], [2, 3], [3, 3], [4, 1.5], [5, .7], [6, 1], [7, 1], [8, 1.5], [9, 1], [10, 1.2]];   // 0 velocidad, 1 aspiradora, 2 lupa, 3-5 puntos x2/x5/x10, 6 jardín, 7 piñata, 8 escudo, 9 manos (sin mordisco en línea)
 function chain(w) {const s=w.segs,sd=rad(w)*.5,h=s[0];let T=w.tr;if(!T){T=w.tr=[];for(let i=s.length-1;i>=0;i--)T.push({x:s[i].x,y:s[i].y})}
 const L=T[T.length-1];if(!L||(h.x-L.x)**2+(h.y-L.y)**2>=2.25)T.push({x:h.x,y:h.y});
 const n=nseg(w);while(s.length<n){const q=s[s.length-1];s.push({x:q.x,y:q.y})}while(s.length>n)s.pop();
@@ -202,11 +241,12 @@ const wss = new WebSocketServer({ server, maxPayload: 16384 });
 wss.on('connection', (ws, req) => {
   const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   ws.id = 'h' + rid(4); ws.u = null; ws.room = null; ws.n = 0; ws.lt = Date.now();
-  ws.on('message', raw => {
+  ws.on('message', async raw => {
     const now = Date.now(); if (now - ws.lt > 1000) { ws.lt = now; ws.n = 0; } if (++ws.n > 40) return;
     let m; try { m = JSON.parse(raw); } catch (e) { return; }
     if (!m || typeof m.t !== 'string') return;
-    const auth = k => { ws.u = DB.users[k].name; return { t: 'authed', u: ws.u, tok: issue(k), data: DB.users[k].data || null }; };
+    const ctInfo = U => U.ct ? { ct: maskCt(U.ct), cv: U.ct.ok ? 1 : 0 } : { ct: '', cv: 0 };
+    const auth = k => { ws.u = DB.users[k].name; return Object.assign({ t: 'authed', u: ws.u, tok: issue(k), data: DB.users[k].data || null }, ctInfo(DB.users[k])); };
     const cred = () => { const u = String(m.u || ''), p = String(m.p || ''); return { u, p, k: u.toLowerCase() }; };
     switch (m.t) {
       case 'reg': {
@@ -217,7 +257,10 @@ wss.on('connection', (ws, req) => {
         if (DB.users[k]) return send(ws, { t: 'err', m: 'Ese usuario ya existe' });
         const salt = rid(8), rs = rid(8), rc = rcode();
         DB.users[k] = { name: u, salt, hash: scrypt(p, salt), rs, rh: scrypt(normRc(rc), rs), data: null, toks: [], created: Date.now() };
-        const a = auth(k); a.rc = rc; send(ws, a); break;
+        const a = auth(k); a.rc = rc;
+        const c0 = m.c ? normCt(m.c) : null;
+        if (c0) { DB.users[k].ct = { k: c0.k, v: c0.v, ok: 0 }; saveDB(); const r = await sendCode(k, 'v', c0, ip); Object.assign(a, ctInfo(DB.users[k])); a.sent = r.ok ? 1 : 0; if (r.dev) a.dev = r.dev; }
+        send(ws, a); break;
       }
       case 'login': {
         const { p, k } = cred(); const U = DB.users[k];
@@ -234,10 +277,41 @@ wss.on('connection', (ws, req) => {
         for (const h of U.toks || []) delete TOK[h]; U.toks = [];
         const a = auth(k); a.rc = rc; send(ws, a); break;
       }
+      case 'ctset': {   // vincular o cambiar correo/celular (requiere sesión); envía código de verificación
+        if (!ws.u) return; const k = ws.u.toLowerCase(), U = DB.users[k], c = normCt(m.c);
+        if (!c) return send(ws, { t: 'ctr', e: 'Escribe un correo válido o un celular con código de país (ej: +573001234567)' });
+        const r = await sendCode(k, 'v', c, ip); if (r.wait) return send(ws, { t: 'ctr', e: 'Espera un minuto antes de pedir otro código' });
+        U.ct = { k: c.k, v: c.v, ok: 0 }; saveDB(); send(ws, { t: 'ctr', sent: 1, ct: maskCt(U.ct), cv: 0, dev: r.dev, real: r.real ? 1 : 0 }); break;
+      }
+      case 'ctok': {    // confirmar el código recibido
+        if (!ws.u) return; const k = ws.u.toLowerCase(), U = DB.users[k];
+        if (blocked(ip)) return send(ws, { t: 'ctr', e: 'Demasiados intentos. Espera unos minutos.' });
+        const c = U.ct && checkCode(k, 'v', m.code);
+        if (!c || c.v !== U.ct.v) { fail(ip); return send(ws, { t: 'ctr', e: 'Código incorrecto o vencido' }); }
+        U.ct.ok = 1; saveDB(); send(ws, { t: 'ctr', ok: 1, ct: maskCt(U.ct), cv: 1 }); break;
+      }
+      case 'ctdel': { if (!ws.u) return; const U = DB.users[ws.u.toLowerCase()]; delete U.ct; delete CODES['v:' + ws.u.toLowerCase()]; saveDB(); send(ws, { t: 'ctr', del: 1, ct: '', cv: 0 }); break; }
+      case 'rq': {      // olvidé mi contraseña: pedir código al contacto verificado (la respuesta nunca revela si la cuenta existe)
+        const k = String(m.u || '').toLowerCase(), U = DB.users[k];
+        if (blocked(ip)) return send(ws, { t: 'err', m: 'Demasiados intentos. Espera unos minutos.' });
+        let r = {}; if (U && U.ct && U.ct.ok) r = await sendCode(k, 'r', U.ct, ip); else if (!sendLog[ip] || sendLog[ip].length < 6) (sendLog[ip] = sendLog[ip] || []).push(Date.now());
+        if (r.wait) return send(ws, { t: 'rqr', e: 'Espera un minuto antes de pedir otro código' });
+        send(ws, { t: 'rqr', ok: 1, dev: r.dev }); break;
+      }
+      case 'rv': {      // cambiar contraseña con el código recibido
+        const { p, k } = cred(); const U = DB.users[k];
+        if (blocked(ip)) return send(ws, { t: 'err', m: 'Demasiados intentos. Espera unos minutos.' });
+        if (p.length < 6 || p.length > 64) return send(ws, { t: 'err', m: 'La nueva contraseña debe tener al menos 6 caracteres' });
+        const c = U && U.ct && U.ct.ok ? checkCode(k, 'r', m.code) : null;
+        if (!c || c.v !== U.ct.v) { fail(ip); return send(ws, { t: 'err', m: 'Código incorrecto o vencido' }); }
+        const rc = rcode(); U.salt = rid(8); U.hash = scrypt(p, U.salt); U.rs = rid(8); U.rh = scrypt(normRc(rc), U.rs);
+        for (const h of U.toks || []) delete TOK[h]; U.toks = [];
+        const a = auth(k); a.rc = rc; send(ws, a); break;
+      }
       case 'tok': {
         const k = TOK[sha(String(m.tok || ''))];
         if (!k || !DB.users[k]) return send(ws, { t: 'err', m: 'Sesión vencida' });
-        ws.u = DB.users[k].name; send(ws, { t: 'authed', u: ws.u, tok: m.tok, data: DB.users[k].data || null }); break;
+        ws.u = DB.users[k].name; send(ws, Object.assign({ t: 'authed', u: ws.u, tok: m.tok, data: DB.users[k].data || null }, ctInfo(DB.users[k]))); break;
       }
       case 'out': { const h = sha(String(m.tok || '')), k = TOK[h]; if (k) { delete TOK[h]; DB.users[k].toks = (DB.users[k].toks || []).filter(x => x !== h); saveDB(); } leave(ws); ws.u = null; break; }
       case 'save': {
@@ -273,8 +347,29 @@ wss.on('connection', (ws, req) => {
         const near = (x, y, rr) => { const lim = rr * .7 + rad(e.bd) * .8 + 110; for (let i = 3; i < e.bd.segs.length; i += 2) { const s = e.bd.segs[i], dx = x - s.x, dy = y - s.y; if (dx * dx + dy * dy < lim * lim) return true; } return false; };
         const bot = r.bots.find(b => b.id === v);
         if (bot) { if (bot.alive && near(bot.segs[0].x, bot.segs[0].y, rad(bot))) killB(r, bot, ws.id); break; }
-        const ve = r.peers.get(v); if (!ve || !ve.g || !ve.g.al || ve.dead || (ve.killedAt && now - ve.killedAt < 900) || (ve.brkAt && now - ve.brkAt < 1500) || !ve.bd) break;
+        const ve = r.peers.get(v); if (!ve || !ve.g || !ve.g.al || ve.dead || ve.g.ch || (ve.killedAt && now - ve.killedAt < 900) || (ve.brkAt && now - ve.brkAt < 1500) || !ve.bd) break;
         if (near(ve.bd.segs[0].x, ve.bd.segs[0].y, rad(ve.bd))) { ve.killedAt = now; send(ve.ws, { t: 'killed', by: ws.id }); }
+        break;
+      }
+      case 'mord': {   // mordisco: 3 mordiscos en la misma zona parten el cuerpo; cada uno quita 6% de masa
+        const r = ws.room, e = r && r.peers.get(ws.id); if (!e || !e.g || !e.g.al || !e.bd || e.dead) return;
+        const now = Date.now(); if (e.mordAt && now - e.mordAt < 600) return;
+        const id = String(m.v || ''), n = Math.max(1, Math.min(3, +m.n | 0)); let hh = e.bd.segs[0]; { const px = +m.x, py = +m.y; if (isFinite(px) && isFinite(py) && Math.hypot(px - hh.x, py - hh.y) < 450) hh = { x: px, y: py }; }
+        const nearB = o => { const lim = rad(o) * .8 + rad(e.bd) * .7 + 100; for (let i = 0; i < o.segs.length; i += 2) { const q = o.segs[i], dx = hh.x - q.x, dy = hh.y - q.y; if (dx * dx + dy * dy < lim * lim) return true; } return false; };
+        const bot = r.bots.find(b => b.id === id);
+        if (bot) {
+          if (!bot.alive || !nearB(bot)) break; e.mordAt = now;
+          if (n < 3) { bot.m = Math.max(10, bot.m * .94); break; }
+          const i = Math.max(2, Math.min(bot.segs.length - 1, +m.i || 2)); if (bot.segs.length < 6 || i >= bot.segs.length) break;
+          const cut = bot.segs.splice(i), tot = i + cut.length, v = Math.max(1, bot.m * (cut.length / tot) * .7 / (cut.length / 2)), list = [];
+          for (let j = 0; j < cut.length && list.length < 60; j += 2) list.push([Math.round(cut[j].x), Math.round(cut[j].y)]);
+          bot.m = Math.max(10, bot.m * i / tot); bot.tr = null; const own = bot.id + 'k' + (++r.nb); addOrbs(r, own, list, v, bot.ci);
+          const ol = list.map((q, j) => ['o' + own + '_' + j, q[0], q[1], v, bot.ci]); for (const pe of r.peers.values()) send(pe.ws, { t: 'world', orbs: ol });
+          break;
+        }
+        const ve = r.peers.get(id); if (!ve || !ve.g || !ve.g.al || ve.dead || !ve.bd || id === ws.id) break;
+        if (!nearB(ve.bd)) break; e.mordAt = now;
+        if (n >= 3) send(ve.ws, { t: 'cut', i: Math.max(2, Math.min(260, +m.i || 6)), by: ws.id }); else send(ve.ws, { t: 'chomp', n, i: Math.max(2, Math.min(260, +m.i || 2)), by: ws.id });
         break;
       }
       case 'hit': {
