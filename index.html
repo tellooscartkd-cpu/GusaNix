@@ -33,6 +33,8 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 #pv{width:100%;max-width:280px;height:96px;margin:2px auto 8px;display:block}
 .lab{font-size:13px;opacity:.75;margin:8px 0 5px}
 #sw,#pt{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+#mylook{margin:10px 0 14px;padding:10px 10px 12px;border-radius:18px;background:#0005;border:2px solid #ffffff22;text-align:center}#mylook #wal{font-size:14px;font-weight:700;color:#ffd23f}#mylook input{margin-bottom:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.chips button{padding:6px 10px;border-radius:12px;border:2px solid var(--ln);background:#0006;color:#fff;font:inherit;font-size:12px;cursor:pointer}.chips button.on{border-color:var(--ac);background:#ffd23f33}.chips button.lk,#pt button.lk{opacity:.72}#wnote{font-size:12px;margin-top:10px;color:#ffd23f;line-height:1.4}
 #sw i{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer}
 #sw i.on{border-color:#fff;transform:scale(1.15)}
 #pt button{padding:7px 12px;border-radius:12px;border:2px solid var(--ln);background:#0006;color:#fff;font:inherit;font-size:13px;cursor:pointer}
@@ -72,11 +74,13 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 <button id="bb" aria-label="Turbo">⚡</button>
 <button id="snd" class="p" aria-label="Sonido">🔊</button>
 <div id="jy" class="hide"><i></i></div><div id="tut" class="hide"><span id="tutx"></span><button id="tuts">Omitir</button></div>
-<div id="wel" class="scr hide"><canvas id="wh"></canvas><div class="wbox"><h1 id="wt" aria-label="GUSANIX"></h1><div class="wsub">Arena de gusanos · comida colombiana</div><div id="wseas"></div>
-<div id="whi" class="wsub hide"></div><button class="btn" id="wg">▶ Jugar</button>
-<div id="wlogd" class="hide"><button class="btn s l" id="wo" style="background:linear-gradient(180deg,#7fdcff,#4361ee);box-shadow:0 5px 0 #243a9a,0 10px 16px #000a,inset 0 2px 0 #fff5">🌐 Jugar en línea</button><button class="btn s l" id="wm">🎨 Apariencia · Tienda · Cuenta</button></div>
+<div id="wel" class="scr hide"><canvas id="wh"></canvas><div class="wbox"><h1 id="wt" aria-label="GUSANIX"></h1><div class="wsub">Arena de gusanos · comida colombiana</div><div id="wmsg" class="wsub" style="color:#ffd23f;margin:6px 0 0"></div><div id="whi" class="wsub hide"></div><div id="wseas"></div>
+<button class="btn" id="wg">▶ Jugar</button>
+<div id="wlogd" class="hide"><button class="btn s l" id="wo" style="background:linear-gradient(180deg,#7fdcff,#4361ee);box-shadow:0 5px 0 #243a9a,0 10px 16px #000a,inset 0 2px 0 #fff5">🌐 Jugar en línea</button></div>
 <div id="wgst"><button class="btn s l" id="wl">🔑 Ya tengo cuenta · Iniciar sesión</button><div class="wrow"><button class="btn s" id="wc">Crear cuenta</button><button class="btn s" id="wr">Olvidé mi contraseña</button></div></div>
-<div class="how">Con cuenta guardas tu progreso, juegas en línea y sumas tiempo para la piel de la temporada. Con “Jugar” entras sin cuenta y juegas solo; usa la copia de seguridad para no perder tu avance.</div></div></div>
+<div class="wrow"><button class="btn s" id="shopb">🛍️ Tienda y apariencia</button><button class="btn s" id="accb">👤 Cuenta</button></div>
+<div class="wrow"><button class="btn s" id="howb">❓ Cómo se juega</button><button class="btn s" id="ctlb">🎮 Controles</button></div>
+<div class="how">Con cuenta guardas tu progreso, juegas en línea y sumas tiempo para la piel de la temporada. En línea solo usas apariencias compradas con monedas 🪙; en modo solo puedes usar todas.</div><button class="btn hide" id="go">JUGAR</button><button class="btn hide" id="onl">En línea</button></div></div>
 <div id="how" class="scr hide"><div class="card gd" style="width:min(520px,100%)"><h1 style="font-size:32px;text-align:center">¿Cómo se juega?</h1>
 <h3>Objetivo</h3><p>Come para crecer y llega al top 1. Mientras más grande, más puntos.</p>
 <h3>Controles</h3><p>💻 PC: mueve el mouse para girar; clic o barra espaciadora = ⚡ turbo.<br>📱 Celular: arrastra el dedo (aparece un joystick flotante) y mantén el botón ⚡ para correr. En 🎮 Controles puedes cambiar a modo zurdo, sensibilidad o toque directo.</p>
@@ -91,21 +95,14 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 <div class="lab">Vibración del turbo</div><div class="opt" id="cv"><button data-v="1">Sí</button><button data-v="0">No</button></div>
 <div class="lab">Sensibilidad de giro: <b id="csv"></b></div><input id="cs" type="range" min="6" max="18" step="1" style="padding:0">
 <div class="how">Automático detecta tu dispositivo: en celular usa joystick flotante y botón de turbo; en PC usa el mouse. Se recuerda tu elección.</div><button class="btn" id="ctlx">Listo</button></div></div>
-<div id="menu" class="scr hide"><div class="card">
-<h1>GUSANIX</h1><div class="sub">Come, crece y domina la arena · v4</div><div id="wal"></div>
-<canvas id="pv" width="280" height="96"></canvas>
-<input id="nm" maxlength="12" placeholder="Nombre de tu gusano" autocomplete="off">
-<div class="lab">Color</div><div id="sw"></div>
-<div class="lab">Patrón</div><div id="pt"></div>
-<button class="btn" id="go">JUGAR</button><button class="btn" id="onl" style="font-size:18px;margin-top:10px;background:linear-gradient(180deg,#7fdcff,#4361ee);box-shadow:0 5px 0 #243a9a;color:#fff">🌐 Jugar en línea</button><button class="btn s" id="accb">👤 Cuenta</button><button class="btn s" id="shopb">🛍️ Tienda y temporada</button><div style="display:flex;gap:8px"><button class="btn s" id="howb">❓ ¿Cómo se juega?</button><button class="btn s" id="ctlb">🎮 Controles</button></div>
-<div class="how">Mueve el mouse (o arrastra el dedo) para girar. Clic, espacio o el botón ⚡ aceleran, pero gastas longitud. Toca el cuerpo de otro gusano o la valla y caes.</div></div></div>
 <div id="over" class="scr hide"><div class="card">
 <h1 style="font-size:38px">¡Eliminado!</h1><div class="sub" id="why"></div>
 <div class="st"><div><b id="o1">0</b>Puntos</div><div><b id="o2">0</b>Puesto</div><div><b id="o3">0</b>Eliminados</div></div>
 <div class="sub" id="gain" style="color:#ffd23f;font-weight:700"></div><div class="sub" id="best"></div>
-<button class="btn" id="again">Jugar de nuevo</button><button class="btn s" id="tomenu">Cambiar apariencia</button><button class="btn s" id="shopo">🛍️ Tienda y temporada</button>
+<button class="btn" id="again">Jugar de nuevo</button><button class="btn s" id="tohome">🏠 Inicio</button><button class="btn s" id="shopo">🛍️ Tienda y temporada</button>
 </div></div>
-<div id="shop" class="scr hide"><div class="card" style="width:min(560px,100%);text-align:left"><div style="display:flex;justify-content:space-between;align-items:center"><h1 style="font-size:32px">Tienda</h1><b id="coins" style="font-size:20px"></b></div><div id="season"></div><div id="grid"></div><div id="bkp"></div><button class="btn s" id="shopx">Volver</button></div></div>
+<div id="shop" class="scr hide"><div class="card" style="width:min(560px,100%);text-align:left"><div style="display:flex;justify-content:space-between;align-items:center"><h1 style="font-size:32px">Tienda</h1><b id="coins" style="font-size:20px"></b></div><div id="mylook"><div class="rt" style="color:#fff;font-size:18px">🐛 Mi gusano</div><div id="wal"></div><canvas id="pv" width="280" height="96"></canvas><input id="nm" maxlength="12" placeholder="Nombre de tu gusano" autocomplete="off"><div id="wpick"><div class="lab">Color</div><div id="sw"></div><div class="lab">Patrón</div><div id="pt"></div><div class="lab">Sombrero</div><div class="chips" id="ah"></div><div class="lab">Camisa</div><div class="chips" id="at"></div><div class="lab">Cara</div><div class="chips" id="ag"></div><div id="wnote"></div></div></div>
+<div id="season"></div><div id="grid"></div><div id="bkp"></div><button class="btn s" id="shopx">Volver</button></div></div>
 <div id="acc" class="scr hide"><div class="card"><h1 style="font-size:32px">Cuenta</h1>
 <div id="af"><div id="tabs"><button class="on">Entrar</button><button>Crear cuenta</button><button>Recuperar</button></div>
 <input id="au" maxlength="16" placeholder="Usuario" autocomplete="username">
@@ -163,15 +160,15 @@ const REW=[{c:2,g:50},{c:4,g:100},{c:6,g:150},{c:8,g:200},{c:10,g:400,s:1}];
 let SV={coins:0,xp:0,own:[0,1,2],claimed:[],sT:{},sB:{}};
 try{const s=JSON.parse(localStorage.getItem('gusanix_save')||'null');if(s)SV=Object.assign(SV,s)}catch(e){}
 SV.sT=SV.sT||{};SV.sB=SV.sB||{};SV.claimed=(SV.claimed||[]).filter(x=>typeof x=='string');
-if(!SV.own.includes(skin.p))skin.p=0;fixAcc();
+fixAcc();
 function sv(){try{localStorage.setItem('gusanix_save',JSON.stringify(SV))}catch(e){}cloudSave()}
 const secs=n=>(SV.sT[n]||0)+(SV.sB[n]||0),lvl=()=>Math.min(10,Math.floor(secs(SEAS.n)/SEC)+1),act=()=>SEAS.act&&Date.now()<SEAS.en,left=()=>Math.max(1,Math.ceil((SEAS.en-Date.now())/864e5)),fmt=x=>{x=Math.floor(x);const h=Math.floor(x/3600),m=Math.floor(x%3600/60);return(h?h+' h ':'')+m+' min'};
 function addB(x){SV.sB[SEAS.n]=Math.min(3600,(SV.sB[SEAS.n]||0)+x)}
 function chk(){const n=SEAS.n,c=Math.floor(secs(n)/SEC);let ex='';for(const r of REW)if(c>=r.c&&!SV.claimed.includes('s'+n+'c'+r.c)){SV.claimed.push('s'+n+'c'+r.c);if(r.g){SV.coins+=r.g;ex+='+'+r.g+' 🪙 '}if(r.s&&SEASKIN[n]!=null){if(!SV.own.includes(SEASKIN[n]))SV.own.push(SEASKIN[n]);ex+='¡Piel exclusiva desbloqueada! '}}if(ex){say2('🏆 Temporada '+n+': '+ex,'#ffd23f',3800);sv()}}
 function meta(){if(tick%60==0)SEAS=seasonOf(Date.now());if(state==='play'&&!document.hidden&&act()){SV.sT[SEAS.n]=(SV.sT[SEAS.n]||0)+1/60;if(tick%600==0)chk();if(tick%1800==0)sv()}if(tut)tutTick()}
-function wal(){SEAS=seasonOf(Date.now());$('#wal').textContent=(acct?'☁️ '+acct+' · ':'')+'🪙 '+SV.coins+' · Temporada '+SEAS.n+': '+(act()?fmt(secs(SEAS.n))+' / 4 h':'empieza el '+new Date(SEAS.st).toLocaleDateString('es-CO',{day:'numeric',month:'long'}))}
+function wal(){$('#wal').textContent='🪙 '+SV.coins+' monedas'+(acct?' · ☁️ '+acct:'')}
 function reward(){const m=me.m|0,k=me.kills,c=Math.floor(m/8)+k*6;SV.coins+=c;chk();sv();$('#gain').textContent='+'+c+' 🪙'+(act()?' · Tiempo de temporada: '+fmt(secs(SEAS.n))+' / 4 h':'')}
-function shopUI(){SEAS=seasonOf(Date.now());const n=SEAS.n,sc=secs(n),pct=Math.min(100,sc/SGOAL*100),sk=SEASKIN[n],c=Math.floor(sc/SEC);
+function shopUI(){ui();SEAS=seasonOf(Date.now());const n=SEAS.n,sc=secs(n),pct=Math.min(100,sc/SGOAL*100),sk=SEASKIN[n],c=Math.floor(sc/SEC);
 $('#coins').textContent='🪙 '+SV.coins;
 $('#season').innerHTML=`<div class="sec"><b>Temporada ${n} · ${MES[(11+n-1)%12]}</b><span>${act()?'quedan '+left()+' días':'empieza el '+new Date(SEAS.st).toLocaleDateString('es-CO',{day:'numeric',month:'long'})}</span></div><div class="bar"><i style="width:${pct}%"></i></div><div class="sub" style="margin:4px 0 8px">Nivel ${Math.min(10,c+1)}/10 · ${fmt(sc)} de 4 h jugadas${SV.sB[n]?' (incluye '+fmt(SV.sB[n])+' de bono top 1)':''}. Online, ser top 1 con 3 o más jugadores suma tiempo extra (máx. 1 h).</div><div class="rw">${REW.map(r=>`<div class="${c>=r.c?'ok':''}">Nv ${r.c}<br>${r.s?'★ '+(sk!=null?SK[sk].n:'piel'):'🪙 '+r.g}</div>`).join('')}</div>`;
 $('#bkp').innerHTML='<div class="rt">Copia de seguridad</div><div class="sub" style="font-size:12px">Guarda este código para recuperar tu progreso (monedas, pieles y tiempo de temporada) en otro dispositivo o si el servidor se reinicia.</div><button class="btn s" id="bke" style="margin-top:4px">Generar código</button><textarea id="bkt" rows="3" style="width:100%;margin-top:6px;border-radius:10px;background:#0007;color:#fff;border:1px solid var(--ln);padding:6px;font-size:11px"></textarea><button class="btn s" id="bki" style="margin-top:4px">Restaurar desde el código pegado</button><div class="sub" id="bkm" style="font-size:12px"></div>';
@@ -180,16 +177,16 @@ h+='<div class="rt" style="color:#fff;font-size:16px;margin-top:14px">🎩 Acces
 for(const G of[{s:'h',t:'Sombreros y gorros'},{s:'t',t:'Camisas y cuello'},{s:'g',t:'Caras'}]){h+=`<div class="rt" style="color:#bbb">${G.t}</div><div class="gr">`+ACC.map((p,i)=>i).filter(i=>ACC[i].s===G.s).map(i=>{const p=ACC[i],own=SV.oa.includes(i),eq=skin[G.s]===i,b=own?(eq?`<button data-ar="${G.s}" class="on">Quitar</button>`:`<button data-ae="${i}">Equipar</button>`):`<button data-ab="${i}" ${SV.coins<p.p?'disabled':''}>Comprar 🪙${p.p}</button>`;return `<div class="it" style="border-color:${RC[p.r]}"><canvas data-a="${i}" width="120" height="64"></canvas><div>${p.n}</div>${b}</div>`}).join('')+'</div>'}
 $('#grid').innerHTML=h}
 let welDone=false,online=false,room=null,rem={},fm={},off={},eaten=[],eq=0,pid=null,acct='',cref=null,ct=0,pu=null;
-function say(m){$('#wal').textContent=m}
+function say(m){$('#wal').textContent=m;const w=$('#wmsg');if(w)w.textContent=m}
 let le=0,ws=null,wsReady=null,pend=[],tok='',user=null,myPeer=null,peerMap={},atab=0,rmode=0,ctm='',ctv=false,fbConf=null;
 try{tok=localStorage.getItem('gusanix_tok')||''}catch(e){}
 const SHIM={peers:()=>Object.values(peerMap),presence:o=>{send({t:'p',g:o.g});return Promise.resolve()}};
 function wsURL(){return SERVER||((location.protocol==='https:'?'wss://':'ws://')+location.host)}
 function send(m){if(ws&&ws.readyState===1)ws.send(JSON.stringify(m))}
 function req(m){return new Promise(r=>{pend.push(r);send(m)})}
-function connect(){if(wsReady)return wsReady;wsReady=new Promise((res,rej)=>{let s;try{s=new WebSocket(wsURL())}catch(e){wsReady=null;rej(e);return}ws=s;s.onopen=()=>res();s.onerror=()=>{if(ws===s){wsReady=null;ws=null}rej(new Error('ws'))};s.onclose=()=>{if(ws===s){wsReady=null;ws=null;pend.splice(0).forEach(r=>r({t:'err',m:'Conexión perdida'}));if(online){menu();say('Conexión perdida con el servidor.')}}};s.onmessage=e=>{try{onMsg(JSON.parse(e.data))}catch(x){}}});return wsReady}
+function connect(){if(wsReady)return wsReady;wsReady=new Promise((res,rej)=>{let s;try{s=new WebSocket(wsURL())}catch(e){wsReady=null;rej(e);return}ws=s;s.onopen=()=>res();s.onerror=()=>{if(ws===s){wsReady=null;ws=null}rej(new Error('ws'))};s.onclose=()=>{if(ws===s){wsReady=null;ws=null;pend.splice(0).forEach(r=>r({t:'err',m:'Conexión perdida'}));if(online){toHome();say('Conexión perdida con el servidor.')}}};s.onmessage=e=>{try{onMsg(JSON.parse(e.data))}catch(x){}}});return wsReady}
 function onMsg(m){
-if(m.t=='authed'||m.t=='err'||m.t=='ctr'||m.t=='rqr'){const r=pend.shift();if(r)r(m);else if(m.t=='err'){if(online)menu();say(m.m)}return}
+if(m.t=='authed'||m.t=='err'||m.t=='ctr'||m.t=='rqr'){const r=pend.shift();if(r)r(m);else if(m.t=='err'){if(online)toHome();say(m.m)}return}
 if(m.t=='cut'){if(online&&me&&me.alive&&me.segs.length>6){bite(null,me,Math.max(4,Math.min(+m.i||6,me.segs.length-1)));say2('💥 ¡Te rompieron el cuerpo!','#ff6b6b')}return}
 if(m.t=='chomp'){if(online&&me&&me.alive&&me.imm<=t){const loss=Math.max(1,me.m*.06);me.m=Math.max(10,me.m-loss);const h=me.segs[Math.min(me.segs.length-1,Math.max(2,+m.i||2))];burst(h.x,h.y,'#ff3b3b',16,4);beep(160,.15,'sawtooth',.05);say2('🦷 ¡Te mordieron! ('+Math.min(3,+m.n||1)+'/3)','#ff6b6b',900)}return}
 if(m.t=='killed'){if(online&&me&&me.alive){const by=worms.find(w=>w.pid===m.by)||null;kill(me,by)}return}
@@ -199,7 +196,7 @@ if(m.t=='pows'){pows.length=0;for(const p of m.list||[])pows.push({x:p.x,y:p.y,k
 if(m.t=='world'){for(const o of m.orbs||[])if(!fm[o[0]])addFood(o[1],o[2],o[4],o[3],1,o[0]);for(const x of m.off||[]){const f=fm['c'+x[0]];if(f){const i=foods.indexOf(f);if(i>=0)rmFood(i)}off[x[0]]=t+x[1]}}}
 function mergeSV(o){if(!o)return;SV.oa=Array.isArray(SV.oa)?SV.oa:[];for(const x of o.oa||[])if(Number.isInteger(x)&&ACC[x]&&!SV.oa.includes(x))SV.oa.push(x);SV.coins=Math.max(SV.coins|0,o.coins|0);for(const x of o.own||[])if(!SV.own.includes(x))SV.own.push(x);for(const x of o.claimed||[])if(typeof x=='string'&&!SV.claimed.includes(x))SV.claimed.push(x);for(const k of['sT','sB']){SV[k]=SV[k]||{};for(const n in o[k]||{})SV[k][n]=Math.max(SV[k][n]||0,+o[k][n]||0)}}
 function cloudSave(){if(!user)return;clearTimeout(ct);ct=setTimeout(async()=>{try{await connect();if(!ws.au){const m=await req({t:'tok',tok});if(m.t!='authed')return;ws.au=1}send({t:'save',data:{SV:SV,skin:skin}})}catch(e){}},900)}
-function applyAuth(m){ctm=m.ct||'';ctv=!!m.cv;user=m.u;acct=m.u;tok=m.tok;if(ws)ws.au=1;try{localStorage.setItem('gusanix_tok',tok)}catch(e){}const c=m.data;if(c&&c.SV){mergeSV(c.SV);if(c.skin){skin.c=c.skin.c|0;skin.p=c.skin.p|0;skin.n=c.skin.n||skin.n;for(const k of['h','t','g'])skin[k]=c.skin[k]==null?-1:c.skin[k]|0}if(!SV.own.includes(skin.p))skin.p=0;fixAcc();try{localStorage.setItem('gusanix_save',JSON.stringify(SV))}catch(e){}}else cloudSave();if(!skin.n)skin.n=m.u;$('#nm').value=skin.n;ui()}
+function applyAuth(m){ctm=m.ct||'';ctv=!!m.cv;user=m.u;acct=m.u;tok=m.tok;if(ws)ws.au=1;try{localStorage.setItem('gusanix_tok',tok)}catch(e){}const c=m.data;if(c&&c.SV){mergeSV(c.SV);if(c.skin){skin.c=c.skin.c|0;skin.p=c.skin.p|0;skin.n=c.skin.n||skin.n;for(const k of['h','t','g'])skin[k]=c.skin[k]==null?-1:c.skin[k]|0}fixAcc();try{localStorage.setItem('gusanix_save',JSON.stringify(SV))}catch(e){}}else cloudSave();if(!skin.n)skin.n=m.u;$('#nm').value=skin.n;ui()}
 async function cloudInit(){if(!tok)return;try{await connect();const m=await req({t:'tok',tok});if(m.t=='authed')applyAuth(m);else{tok='';try{localStorage.removeItem('gusanix_tok')}catch(e){}}}catch(e){}}
 function accUI(){const li=!!user;$('#af').classList.toggle('hide',li);$('#ao').classList.toggle('hide',!li);$('#ao b').textContent=user||'';
 $('#ae').classList.toggle('hide',atab!=1);$('#rmode').classList.toggle('hide',atab!=2);$('#ar').classList.toggle('hide',!(atab==2&&rmode==0));$('#rs').classList.toggle('hide',!(atab==2&&rmode==1));
@@ -207,11 +204,12 @@ document.querySelectorAll('#rmode button').forEach((b,i)=>b.classList.toggle('on
 $('#asub').textContent=['Entrar','Crear cuenta','Cambiar contraseña'][atab];$('#ap').placeholder=atab==2?'Nueva contraseña (mín. 6)':'Contraseña (mín. 6)';document.querySelectorAll('#tabs button').forEach((b,i)=>b.classList.toggle('on',i==atab));
 if(li){$('#ct').innerHTML=ctm?(ctv?'✅ Recuperación por SMS activa<br><b>'+esc(ctm)+'</b>':'⏳ Falta confirmar el celular. Escribe el código que te llegó por SMS.'):(fbConf?'⏳ Escribe el código que te llegó por SMS.':'🔒 Añade tu celular para poder recuperar tu cuenta si olvidas la contraseña.');
 const pend=!!fbConf;$('#cc').classList.toggle('hide',!pend);$('#cok').classList.toggle('hide',!pend);$('#cdel').classList.toggle('hide',!ctm);$('#ce').classList.toggle('hide',!!ctm&&ctv);$('#cset').classList.toggle('hide',!!ctm&&ctv);$('#cset').textContent=pend?'Reenviar código / cambiar':'Vincular celular'}}
-let accFrom='m';function openAcc(f){accFrom=f==='w'?'w':'m';welDone=true;$('#wel').classList.add('hide');$('#acc').classList.remove('hide');$('#menu').classList.add('hide');$('#am').textContent='';accUI()}
-function closeAcc(){$('#acc').classList.add('hide');if(accFrom==='w'){welDone=false;showWel();return}$('#menu').classList.remove('hide');ui()}
+function openAcc(){welDone=true;$('#wel').classList.add('hide');$('#acc').classList.remove('hide');$('#am').textContent='';accUI()}
+function home(){welDone=false;showWel()}
+function closeAcc(){$('#acc').classList.add('hide');home();ui()}
 document.querySelectorAll('#tabs button').forEach((b,i)=>b.onclick=()=>{atab=i;$('#am').textContent='';accUI()});
 document.querySelectorAll('#rmode button').forEach((b,i)=>b.onclick=()=>{rmode=i;$('#am').textContent='';accUI()});
-$('#accb').onclick=()=>openAcc('m');$('#ax').onclick=closeAcc;
+$('#accb').onclick=()=>{if(!user){atab=0}openAcc()};$('#ax').onclick=closeAcc;
 $('#alo').onclick=()=>{send({t:'out',tok});user=null;acct='';tok='';try{localStorage.removeItem('gusanix_tok')}catch(e){}if(ws)ws.au=0;accUI();ui()};
 $('#asub').onclick=async()=>{const u=$('#au').value.trim(),p=$('#ap').value,am=$('#am');am.textContent='Conectando...';try{await connect();const m=await req(atab==0?{t:'login',u,p}:atab==1?{t:'reg',u,p}:rmode==1?{t:'rfb',u,idt:await fbTokenR(),p}:{t:'rec',u,rc:$('#ar').value.trim(),p});if(m.t=='err'){am.textContent=m.m;return}applyAuth(m);$('#ap').value='';let pendPh=false;if(atab==1&&$('#ae').value.trim()){try{fbConf=await fbSend($('#ae').value);pendPh=true}catch(e){am.textContent=fbErr(e)}}if(atab==2){fbConf=null;rconf=null}accUI();if(m.rc){am.innerHTML='✅ Cuenta lista.<br><b style="font-size:20px;color:#ffd23f">'+esc(m.rc)+'</b><br>Este es tu código de recuperación. Guárdalo (captura o papel): sin él no podrás recuperar la cuenta si olvidas la contraseña.'+(pendPh?'<br>📨 Te enviamos un SMS. Escribe el código abajo para activar la recuperación por celular.':'')}else{am.textContent='';closeAcc()}}catch(e){am.textContent=e&&e.message=='nosms'?'Primero toca "Enviar código por SMS"':e&&e.code?fbErr(e):'No se pudo conectar al servidor.'}};
 const FBCFG={apiKey:"AIzaSyAolZQqeiLPqXbSSK3v0_ZS-FfsiVOxm7s",authDomain:"gusanix-b5829.firebaseapp.com",projectId:"gusanix-b5829",appId:"1:925172695912:web:0ea551906a973e3da98cdd"};
@@ -247,8 +245,8 @@ function bkH(j){let h=7;for(let i=0;i<j.length;i++)h=(h*31+j.charCodeAt(i))>>>0;
 function bkExp(){const j=JSON.stringify({v:4,SV,skin:{c:skin.c,p:skin.p,n:skin.n,h:skin.h,t:skin.t,g:skin.g}});return'GX4-'+btoa(unescape(encodeURIComponent(j)))+'-'+bkH(j)}
 function bkImp(code){try{const m=/^GX4-([A-Za-z0-9+/=]+)-([a-z0-9]+)$/.exec(String(code).trim());if(!m)return'Código inválido';const j=decodeURIComponent(escape(atob(m[1])));if(bkH(j)!==m[2])return'Código dañado o incompleto';const o=JSON.parse(j);mergeSV(o.SV);if(o.skin&&SV.own.includes(o.skin.p|0)){skin.c=o.skin.c|0;skin.p=o.skin.p|0}for(const k of['h','t','g'])if(o.skin&&o.skin[k]!=null&&SV.oa.includes(o.skin[k]|0))skin[k]=o.skin[k]|0;sv();saveSkin();ui();return'✅ Progreso restaurado'}catch(e){return'Código inválido'}}
 $('#bkp').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id=='bke'){$('#bkt').value=bkExp();$('#bkt').select()}else if(b.id=='bki'){$('#bkm').textContent=bkImp($('#bkt').value);shopUI()}};
-function openShop(){shopUI();$('#shop').classList.remove('hide');$('#menu').classList.add('hide')}
-function closeShop(){$('#shop').classList.add('hide');$('#menu').classList.remove('hide');ui()}
+function openShop(){shopUI();ui();$('#shop').classList.remove('hide');$('#wel').classList.add('hide');welDone=true}
+function closeShop(){$('#shop').classList.add('hide');home();ui()}
 function accPrev(g,i){g.clearRect(0,0,120,64);const A=ACC[i],r=10,sx=[];for(let j=0;j<14;j++)sx.push({x:100-j*7.5,y:42+Math.sin(j*.6+t*3)*3});const AXp=A.s==='t'?i:-1;
 for(let j=13;j>=0;j--){const p=sx[j],ad=segAdj(sx,j,14,r,AXp,t);g.fillStyle=OCC;g.beginPath();g.arc(ad?ad[0]:p.x,ad?ad[1]:p.y,(ad?ad[2]:r)+1.6,0,6.283);g.fill()}
 for(let j=13;j>=0;j--){const ad=segAdj(sx,j,14,r,AXp,t),p=ad?{x:ad[0],y:ad[1]}:sx[j],R=ad?ad[2]:r;g.fillStyle=shirtCol(AXp,j)||segCol(skin.c,0,j,14);g.beginPath();g.arc(p.x,p.y,R,0,6.283);g.fill();g.drawImage(SPH,p.x-R,p.y-R,R*2,R*2);shirtMark(g,AXp,j,p.x,p.y,R,-1,0)}
@@ -358,7 +356,10 @@ const ACC=[
 {n:'Gafas de sol',s:'g',r:1,p:100},{n:'Gafas de corazón',s:'g',r:2,p:200},{n:'Gafas redondas',s:'g',r:0,p:80},{n:'Nariz de Rodolfo',s:'g',r:2,p:200},{n:'Bigote',s:'g',r:1,p:100},
 {n:'Sombrero pirata',s:'h',r:3,p:500},{n:'Casco vikingo',s:'h',r:3,p:500},{n:'Corona de plumas',s:'h',r:4,p:900},{n:'Parche pirata',s:'g',r:1,p:120},{n:'Antifaz',s:'g',r:2,p:250},{n:'Camiseta pirata',s:'t',r:2,p:300}];
 const NOAX=[-1,-1,-1],OCC='#1d1233',pk2=a=>a[Math.random()*a.length|0],HL=[0,1,2,3,4,5,6,7,8,9,22,23,24],TL=[10,11,12,13,14,15,16,27],GL=[17,18,19,20,21,25,26],rAx=()=>[Math.random()<.45?pk2(HL):-1,Math.random()<.4?pk2(TL):-1,Math.random()<.3?pk2(GL):-1];
-function fixAcc(){SV.oa=Array.isArray(SV.oa)?SV.oa:[];for(const k of['h','t','g'])if(skin[k]==null||!SV.oa.includes(skin[k]))skin[k]=-1}
+function fixAcc(){SV.oa=Array.isArray(SV.oa)?SV.oa:[];for(const k of['h','t','g'])if(skin[k]==null)skin[k]=-1}
+let UNLOCK=true;   // por ahora todas las apariencias están desbloqueadas (también en línea). Pon false para exigir compra en línea
+const owP=i=>UNLOCK||SV.own.includes(i),owA=i=>i>=0&&(UNLOCK||SV.oa.includes(i));
+function effLook(){const x=axOf();return{c:skin.c,p:owP(skin.p)?skin.p:0,ax:x.map(k=>owA(k)?k:-1)}}
 const axOf=()=>[skin.h==null?-1:skin.h,skin.t==null?-1:skin.t,skin.g==null?-1:skin.g];
 function shc(h,f){const n=parseInt(h.slice(1),16),R=n>>16,G=n>>8&255,B=n&255,t=f<0?0:255,p=Math.abs(f);return'rgb('+Math.round(R+(t-R)*p)+','+Math.round(G+(t-G)*p)+','+Math.round(B+(t-B)*p)+')'}
 function gf(g,h,x0,y0,x1,y1){if(typeof h!=='string'||h[0]!=='#')return h;if(h.length===4)h='#'+h[1]+h[1]+h[2]+h[2]+h[3]+h[3];if(h.length!==7)return h;const q=g.createLinearGradient(x0,y0,x1,y1);q.addColorStop(0,shc(h,.4));q.addColorStop(.5,h);q.addColorStop(1,shc(h,-.34));return q}
@@ -476,11 +477,14 @@ for(let i=n-1;i>=0;i--){const ad=segAdj(sx,i,n,r,ax[1],t),p=ad?{x:ad[0],y:ad[1]}
 capeOver(g,ax[1],sx,r,t);shirtAfter(g,ax[1],sx,r,t);const h=sx[0],hr=r*1.16;g.fillStyle=OCC;g.beginPath();g.arc(h.x,h.y,hr+2.2,0,6.283);g.fill();g.fillStyle=segCol(c,pt,0,n);g.beginPath();g.arc(h.x,h.y,hr,0,6.283);g.fill();g.drawImage(SPH,h.x-hr,h.y-hr,hr*2,hr*2);if(ax[0]>=0)hatD(g,ax[0],h.x-hr*.05,h.y,hr*1.18,t,0);eyes(g,h.x,h.y,hr,0);if(ax[2]>=0)faceD(g,ax[2],h.x,h.y,hr,0,t)}
 function prev(){pv.clearRect(0,0,280,96);const r=13,n=18,sx=[];for(let i=0;i<n;i++)sx.push({x:244-i*11,y:58+Math.sin(i*.5+t*3)*8});pvW(pv,sx,r,skin.c,skin.p,axOf())}
 function saveSkin(){try{localStorage.setItem('gusanix_skin',JSON.stringify(skin))}catch(e){}cloudSave()}
-function ui(){$('#sw').innerHTML=COLORS.map((c,i)=>'<i data-i="'+i+'" style="background:'+c+'" class="'+(i==skin.c?'on':'')+'"></i>').join('');$('#pt').innerHTML=SK.map((p,i)=>SV.own.includes(i)?'<button data-i="'+i+'" class="'+(i==skin.p?'on':'')+'">'+p.n+'</button>':'').join('');$('#sw').style.opacity=skin.p>4?.35:1;wal()}
+function ui(){$('#sw').innerHTML=COLORS.map((c,i)=>'<i data-i="'+i+'" style="background:'+c+'" class="'+(i==skin.c?'on':'')+'"></i>').join('');$('#pt').innerHTML=SK.map((p,i)=>'<button data-i="'+i+'" class="'+(i==skin.p?'on':'')+(owP(i)?'':' lk')+'">'+(owP(i)?'':'🔒 ')+p.n+'</button>').join('');$('#sw').style.opacity=skin.p>4?.35:1;
+for(const G of['h','t','g']){$('#a'+G).innerHTML='<button data-s="'+G+'" data-j="-1" class="'+(skin[G]<0?'on':'')+'">Ninguno</button>'+ACC.map((p,i)=>i).filter(i=>ACC[i].s===G).map(i=>'<button data-s="'+G+'" data-j="'+i+'" class="'+(skin[G]===i?'on':'')+(owA(i)?'':' lk')+'">'+(owA(i)?'':'🔒 ')+ACC[i].n+'</button>').join('')}
+const lk=!owP(skin.p)||axOf().some(k=>k>=0&&!owA(k));$('#wnote').textContent=lk?'🔒 Estas apariencias aún no son tuyas: en modo solo se ven igual, pero en línea se usan solo las que compraste con monedas 🪙 en la Tienda.':'';wal()}
 $('#sw').onclick=e=>{const i=e.target.dataset.i;if(i!=null){skin.c=+i;ui();saveSkin()}};
+for(const G of['h','t','g'])$('#a'+G).onclick=e=>{const b=e.target.closest('button');if(!b)return;skin[b.dataset.s]=+b.dataset.j;ui();saveSkin()};
 $('#pt').onclick=e=>{const i=e.target.dataset.i;if(i!=null){skin.p=+i;ui();saveSkin()}};
-function show(p){document.querySelectorAll('.g').forEach(e=>e.classList.toggle('hide',!p));$('#bb').classList.toggle('on',p);$('#menu').classList.toggle('hide',p||state==='over'||!$('#wel').classList.contains('hide')||!$('#acc').classList.contains('hide'));$('#over').classList.toggle('hide',state!=='over')}
-function play(){resetWorld(online);if(online&&pid)setTimeout(()=>{if(me)me.pid=pid},0);if(online)send({t:'sync'});skin.n=($('#nm').value.trim()||'Gusano').slice(0,12);saveSkin();me=mk(skin.n,skin.c,skin.p,0,25);me.sens=CT.sens;me.ax=axOf();worms[0]=me;state='play';show(true);tut=null;$('#tut').classList.add('hide');if(!online)tutStart();hud();beep(440,.15,'triangle');beep(660,.2,'triangle')}
+function show(p){document.querySelectorAll('.g').forEach(e=>e.classList.toggle('hide',!p));$('#bb').classList.toggle('on',p);$('#over').classList.toggle('hide',state!=='over');if(p){$('#wel').classList.add('hide');welDone=true}else if(state!=='over')home()}
+function play(){resetWorld(online);if(online&&pid)setTimeout(()=>{if(me)me.pid=pid},0);if(online)send({t:'sync'});skin.n=($('#nm').value.trim()||'Gusano').slice(0,12);saveSkin();{const L=online?effLook():{c:skin.c,p:skin.p,ax:axOf()};me=mk(skin.n,L.c,L.p,0,25);me.ax=L.ax}me.sens=CT.sens;worms[0]=me;state='play';show(true);tut=null;$('#tut').classList.add('hide');if(!online)tutStart();hud();beep(440,.15,'triangle');beep(660,.2,'triangle')}
 function over(by){state='over';show(false);reward();if(online){me.by=(by&&by.pid)||null;net()}$('#why').textContent=by?'Chocaste con '+by.name:'Chocaste con el borde de la arena';$('#o1').textContent=me.m|0;$('#o2').textContent='#'+me.rank;$('#o3').textContent=me.kills;let b=0;try{b=+localStorage.getItem('gusanix_best')||0;if((me.m|0)>b){b=me.m|0;localStorage.setItem('gusanix_best',b)}}catch(e){}$('#best').textContent='Tu mejor marca: '+b+' puntos';beep(220,.4,'sawtooth',.05);beep(150,.5,'sawtooth',.05)}
 let HS={};try{HS=JSON.parse(localStorage.getItem('gusanix_hints')||'{}')}catch(e){}
 let hintT=0;function hintOnce(k,tx){if(HS[k]||tut)return;HS[k]=1;try{localStorage.setItem('gusanix_hints',JSON.stringify(HS))}catch(e){}$('#tutx').textContent='💡 '+tx;$('#tuts').classList.add('hide');$('#tut').classList.remove('hide');clearTimeout(hintT);hintT=setTimeout(()=>$('#tut').classList.add('hide'),6500)}
@@ -492,15 +496,15 @@ function tutEnd(){tut=null;$('#tut').classList.add('hide');try{localStorage.setI
 function tutTick(){if(state!=='play'||!me||!me.alive){return}const h=me.segs[0];if(me.boost)tut.bs+=1/60;let ok=false;switch(tut.i){case 0:ok=Math.hypot(h.x-tut.x0,h.y-tut.y0)>350;break;case 1:ok=me.m>=tut.m0+15;break;case 2:ok=tut.bs>=1;break;default:ok=t-tut.t0>5.5}if(ok){tut.i++;tut.t0=t;if(tut.i>=TUS.length)tutEnd();else tutShow()}}
 $('#tuts').onclick=tutEnd;
 function menu(){if(online&&room){try{room.presence({g:null}).catch(()=>{})}catch(e){}}online=false;state='menu';me=null;resetWorld(0);show(false);ui()}
-$('#go').onclick=play;$('#again').onclick=play;$('#tomenu').onclick=menu;$('#shopb').onclick=openShop;$('#shopo').onclick=()=>{menu();openShop()};$('#shopx').onclick=closeShop;
+$('#go').onclick=play;$('#again').onclick=play;$('#shopb').onclick=openShop;$('#shopo').onclick=()=>{menu();openShop()};$('#shopx').onclick=closeShop;
 $('#snd').onclick=()=>{sound=!sound;$('#snd').textContent=sound?'🔊':'🔇'};
 $('#nm').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')play()});
 const CT=Object.assign({mode:'auto',lefty:0,sens:1,vib:1},(()=>{try{return JSON.parse(localStorage.getItem('gusanix_ctrl')||'{}')}catch(e){return{}}})());
 const coarse=()=>typeof matchMedia==='function'&&matchMedia('(pointer:coarse)').matches,joyOn=()=>CT.mode=='joy'||(CT.mode=='auto'&&coarse()),tmOn=()=>coarse()||CT.mode!='auto';
 function applyCtrl(){document.body.classList.toggle('tm',tmOn());document.body.classList.toggle('lf',!!CT.lefty);try{localStorage.setItem('gusanix_ctrl',JSON.stringify(CT))}catch(e){}document.querySelectorAll('#cm button').forEach(b=>b.classList.toggle('on',b.dataset.m==CT.mode));document.querySelectorAll('#ch button').forEach(b=>b.classList.toggle('on',(+b.dataset.l)==(CT.lefty?1:0)));document.querySelectorAll('#cv button').forEach(b=>b.classList.toggle('on',(+b.dataset.v)==(CT.vib?1:0)));$('#cs').value=Math.round(CT.sens*10);$('#csv').textContent=CT.sens.toFixed(1);if(me)me.sens=CT.sens}
 $('#cm').onclick=e=>{const m=e.target.dataset.m;if(m){CT.mode=m;applyCtrl()}};$('#ch').onclick=e=>{const l=e.target.dataset.l;if(l!=null){CT.lefty=+l;applyCtrl()}};$('#cv').onclick=e=>{const v=e.target.dataset.v;if(v!=null){CT.vib=+v;applyCtrl()}};$('#cs').oninput=e=>{CT.sens=+e.target.value/10;applyCtrl()};
-$('#ctlb').onclick=()=>{$('#menu').classList.add('hide');$('#ctl').classList.remove('hide');applyCtrl()};$('#ctlx').onclick=()=>{$('#ctl').classList.add('hide');$('#menu').classList.remove('hide')};
-$('#howb').onclick=()=>{$('#menu').classList.add('hide');$('#how').classList.remove('hide')};$('#howx').onclick=()=>{$('#how').classList.add('hide');$('#menu').classList.remove('hide')};
+$('#ctlb').onclick=()=>{$('#wel').classList.add('hide');welDone=true;$('#ctl').classList.remove('hide');applyCtrl()};$('#ctlx').onclick=()=>{$('#ctl').classList.add('hide');home()};
+$('#howb').onclick=()=>{$('#wel').classList.add('hide');welDone=true;$('#how').classList.remove('hide')};$('#howx').onclick=()=>{$('#how').classList.add('hide');home()};
 const jyE=$('#jy'),jk=jyE.firstElementChild;let jp=null,jx=0,jy0=0;
 function jend(e){if(e.pointerId===jp){jp=null;jyE.classList.add('hide')}}
 addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'&&joyOn()){if(e.pointerId===jp){const dx=e.clientX-jx,dy=e.clientY-jy0,d=Math.hypot(dx,dy);if(d>8){mouse.x=dx;mouse.y=dy}const k=d>50?50/d:1;jk.style.transform='translate('+dx*k+'px,'+dy*k+'px)'}return}mouse.x=e.clientX-W/2;mouse.y=e.clientY-H/2});
@@ -559,10 +563,11 @@ for(const o of objs){const z=o.d,fy=hz+(H-hz)*(.12+z*.8);
   wg.save();wg.translate(wx,fy-26*k-Math.abs(Math.sin(tt*3+w.ph))*4*k);wg.scale(dir*k,k);wg.translate(-0,0);pvW(wg,sxs,13,w.c,w.p,w.ax);wg.restore()}}
 // viñeta
 q=wg.createRadialGradient(W/2,H*.55,Math.min(W,H)*.35,W/2,H*.55,Math.max(W,H)*.8);q.addColorStop(0,'#0000');q.addColorStop(1,'#000a');wg.fillStyle=q;wg.fillRect(0,0,W,H)}
-function welUI(){const li=!!user;$('#wlogd').classList.toggle('hide',!li);$('#wgst').classList.toggle('hide',li);$('#whi').classList.toggle('hide',!li);$('#whi').textContent='Hola, '+(user||'')+' 👋';document.querySelector('#wel .how').classList.toggle('hide',li)}
-function showWel(){if(welDone)return;welUI();$('#menu').classList.add('hide');$('#wel').classList.remove('hide');wseas();if(!wRaf)wRaf=requestAnimationFrame(wdraw)}
-function hideWel(){welDone=true;$('#wel').classList.add('hide');if(state==='menu')$('#menu').classList.remove('hide');ui()}
-$('#wl').onclick=()=>{atab=0;openAcc('w')};$('#wc').onclick=()=>{atab=1;openAcc('w')};$('#wr').onclick=()=>{atab=2;openAcc('w')};$('#wg').onclick=()=>{hideWel();play()};$('#wo').onclick=()=>{hideWel();$('#onl').click()};$('#wm').onclick=hideWel;
+function welUI(){const li=!!user;$('#wlogd').classList.toggle('hide',!li);$('#wgst').classList.toggle('hide',li);$('#whi').classList.toggle('hide',!li);$('#whi').textContent='Hola, '+(user||'')+' 👋'}
+function showWel(){if(welDone)return;welUI();ui();$('#wel').classList.remove('hide');wseas();if(!wRaf)wRaf=requestAnimationFrame(wdraw)}
+function hideWel(){welDone=true;$('#wel').classList.add('hide');ui()}
+function toHome(){menu()}
+$('#wl').onclick=()=>{atab=0;openAcc()};$('#wc').onclick=()=>{atab=1;openAcc()};$('#wr').onclick=()=>{atab=2;openAcc()};$('#wg').onclick=()=>{hideWel();play()};$('#wo').onclick=()=>{hideWel();$('#onl').click()};$('#tohome').onclick=toHome;
 ui();applyCtrl();cloudInit().then(()=>{if(!welDone)welUI()});showWel();requestAnimationFrame(frame);
 let bgT=0;setInterval(()=>{if(!document.hidden){bgT=0;return}const n=performance.now();if(!bgT){bgT=n;return}const k=Math.min(3600,Math.floor((n-bgT)/16.667));bgT+=k*16.667;for(let i=0;i<k;i++)step()},500);
 </script></body></html>

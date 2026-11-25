@@ -67,6 +67,30 @@ function checkCode(key, purpose, code) {
 }
 setInterval(() => { const n = Date.now(); for (const k in CODES) if (n > CODES[k].exp) delete CODES[k]; }, 300000).unref();
 
+// ---------- Verificación de celular con Firebase Auth (SMS gestionado por Firebase) ----------
+// El navegador pide y confirma el SMS con Firebase; el servidor solo comprueba la firma del token (no necesita claves secretas).
+const UNLOCK = process.env.UNLOCK_ALL !== '0';   // por ahora todas las apariencias están desbloqueadas; UNLOCK_ALL=0 exige compra en línea
+const FB_PROJECT = process.env.FB_PROJECT || 'gusanix-b5829';
+let FBK = { exp: 0, keys: {} };
+function getJSON(url) { return new Promise((ok, no) => https.get(url, res => { let o = ''; res.on('data', c => o += c); res.on('end', () => { try { ok(JSON.parse(o)); } catch (e) { no(e); } }); }).on('error', no).setTimeout(10000, function () { this.destroy(new Error('timeout')); })); }
+async function fbKeys() {
+  if (process.env.FB_TEST_KEYS) return JSON.parse(process.env.FB_TEST_KEYS);
+  if (Date.now() < FBK.exp) return FBK.keys;
+  FBK = { exp: Date.now() + 3600000, keys: await getJSON('https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com') }; return FBK.keys;
+}
+async function fbVerify(idt) {
+  try {
+    const [h, p, sg] = String(idt || '').split('.'); if (!h || !p || !sg) return null;
+    const H = JSON.parse(Buffer.from(h, 'base64url')), P = JSON.parse(Buffer.from(p, 'base64url')), pem = (await fbKeys())[H.kid];
+    if (H.alg !== 'RS256' || !pem) return null;
+    if (!crypto.createVerify('RSA-SHA256').update(h + '.' + p).verify(pem, Buffer.from(sg, 'base64url'))) return null;
+    const n = Date.now() / 1000;
+    if (P.aud !== FB_PROJECT || P.iss !== 'https://securetoken.google.com/' + FB_PROJECT || !P.sub || P.exp < n || P.iat > n + 60) return null;
+    if (!P.firebase || P.firebase.sign_in_provider !== 'phone' || !/^\+\d{8,15}$/.test(P.phone_number || '')) return null;
+    return P;
+  } catch (e) { return null; }
+}
+
 const server = http.createServer((req, res) => {
   if (req.url === '/health') { res.end('ok v4 - IA por sala: ' + NBOT + ' - salas activas: ' + rooms.length); return; }
   if (req.url === '/' || req.url.startsWith('/?') || req.url === '/index.html') {
@@ -308,6 +332,22 @@ wss.on('connection', (ws, req) => {
         for (const h of U.toks || []) delete TOK[h]; U.toks = [];
         const a = auth(k); a.rc = rc; send(ws, a); break;
       }
+      case 'ctfb': {    // vincular celular ya verificado por Firebase
+        if (!ws.u) return; const k = ws.u.toLowerCase(), U = DB.users[k];
+        if (blocked(ip)) return send(ws, { t: 'ctr', e: 'Demasiados intentos. Espera unos minutos.' });
+        const P = await fbVerify(m.idt); if (!P) { fail(ip); return send(ws, { t: 'ctr', e: 'No se pudo verificar el celular. Intenta de nuevo.' }); }
+        U.ct = { k: 'p', v: P.phone_number, ok: 1 }; saveDB(); send(ws, { t: 'ctr', ok: 1, ct: maskCt(U.ct), cv: 1 }); break;
+      }
+      case 'rfb': {     // recuperar contraseña con celular verificado por Firebase
+        const { p, k } = cred(); const U = DB.users[k];
+        if (blocked(ip)) return send(ws, { t: 'err', m: 'Demasiados intentos. Espera unos minutos.' });
+        if (p.length < 6 || p.length > 64) return send(ws, { t: 'err', m: 'La nueva contraseña debe tener al menos 6 caracteres' });
+        const P = await fbVerify(m.idt);
+        if (!P || !U || !U.ct || !U.ct.ok || U.ct.k !== 'p' || U.ct.v !== P.phone_number) { fail(ip); return send(ws, { t: 'err', m: 'Ese celular no está vinculado a esa cuenta' }); }
+        const rc = rcode(); U.salt = rid(8); U.hash = scrypt(p, U.salt); U.rs = rid(8); U.rh = scrypt(normRc(rc), U.rs);
+        for (const h of U.toks || []) delete TOK[h]; U.toks = [];
+        const a = auth(k); a.rc = rc; send(ws, a); break;
+      }
       case 'tok': {
         const k = TOK[sha(String(m.tok || ''))];
         if (!k || !DB.users[k]) return send(ws, { t: 'err', m: 'Sesión vencida' });
@@ -322,7 +362,7 @@ wss.on('connection', (ws, req) => {
           const v = nd.SV; v.sT = v.sT && typeof v.sT === 'object' ? v.sT : {}; v.sB = v.sB && typeof v.sB === 'object' ? v.sB : {};
           v.own = Array.isArray(v.own) ? v.own.filter(x => Number.isInteger(x)) : [0, 1, 2]; v.claimed = Array.isArray(v.claimed) ? v.claimed.filter(x => typeof x === 'string') : [];
           v.oa = Array.isArray(v.oa) ? [...new Set(v.oa.filter(x => Number.isInteger(x) && x >= 0 && x < 40))] : [];
-          if (nd.skin) for (const k of ['h', 't', 'g']) { const q = nd.skin[k]; nd.skin[k] = Number.isInteger(q) && v.oa.includes(q) ? q : -1; }
+          if (nd.skin) { for (const k of ['h', 't', 'g']) { const q = nd.skin[k]; nd.skin[k] = Number.isInteger(q) && q >= 0 && q < 40 && (UNLOCK || v.oa.includes(q)) ? q : -1; } if (!Number.isInteger(nd.skin.p) || nd.skin.p < 0 || nd.skin.p > 9) nd.skin.p = 0; }
           const wall = U.lastSave ? (now - U.lastSave) / 1000 + 90 : 86400;   // el tiempo acreditado no puede superar el tiempo real transcurrido
           for (const n of Object.keys(v.sT)) { const o = (old.sT && +old.sT[n]) || 0; let x = +v.sT[n] || 0; x = Math.min(x, Math.max(0, (now - sStart(+n)) / 1000), o + wall); v.sT[n] = x > 0 ? Math.round(x) : 0; }
           for (const n of Object.keys(v.sB)) { let x = Math.min(+v.sB[n] || 0, 3600, v.sT[n] || 0); v.sB[n] = x > 0 ? Math.round(x) : 0; }
@@ -403,7 +443,11 @@ wss.on('connection', (ws, req) => {
         const r = ws.room, e = r && r.peers.get(ws.id); if (!e) return;
         if (m.g === null) { if (e.g) { e.g = null; e.pg = null; e.bd = null; for (const p of r.peers.values()) if (p.ws !== ws) send(p.ws, { t: 'peers', peers: [], left: [ws.id] }); } }
         else if (m.g && typeof m.g === 'object' && JSON.stringify(m.g).length < 5000) {
-          const g = m.g; g.n = ws.u; onPres(r, ws.id, e, g, Date.now());
+          const g = m.g; g.n = ws.u;
+          { const dd = (DB.users[ws.u.toLowerCase()] || {}).data, sv0 = (dd && dd.SV) || {}, own = Array.isArray(sv0.own) ? sv0.own : [0, 1, 2], oa = Array.isArray(sv0.oa) ? sv0.oa : [];   // en línea solo se usan apariencias que la cuenta ya compró
+            if ('p' in g && (!Number.isInteger(g.p) || g.p < 0 || g.p > 9 || !(UNLOCK || own.includes(g.p)))) g.p = 0;
+            if (Array.isArray(g.z)) g.z = g.z.slice(0, 3).map(x => Number.isInteger(x) && x >= 0 && x < 40 && (UNLOCK || oa.includes(x)) ? x : -1); }
+          onPres(r, ws.id, e, g, Date.now());
           e.g = Object.assign(e.g || {}, g); e.pg = Object.assign(e.pg || {}, g);
         }
         break;
