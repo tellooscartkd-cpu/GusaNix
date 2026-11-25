@@ -479,7 +479,7 @@ function saveSkin(){try{localStorage.setItem('gusanix_skin',JSON.stringify(skin)
 function ui(){$('#sw').innerHTML=COLORS.map((c,i)=>'<i data-i="'+i+'" style="background:'+c+'" class="'+(i==skin.c?'on':'')+'"></i>').join('');$('#pt').innerHTML=SK.map((p,i)=>SV.own.includes(i)?'<button data-i="'+i+'" class="'+(i==skin.p?'on':'')+'">'+p.n+'</button>':'').join('');$('#sw').style.opacity=skin.p>4?.35:1;wal()}
 $('#sw').onclick=e=>{const i=e.target.dataset.i;if(i!=null){skin.c=+i;ui();saveSkin()}};
 $('#pt').onclick=e=>{const i=e.target.dataset.i;if(i!=null){skin.p=+i;ui();saveSkin()}};
-function show(p){document.querySelectorAll('.g').forEach(e=>e.classList.toggle('hide',!p));$('#bb').classList.toggle('on',p);$('#menu').classList.toggle('hide',p||state==='over');$('#over').classList.toggle('hide',state!=='over')}
+function show(p){document.querySelectorAll('.g').forEach(e=>e.classList.toggle('hide',!p));$('#bb').classList.toggle('on',p);$('#menu').classList.toggle('hide',p||state==='over'||!$('#wel').classList.contains('hide')||!$('#acc').classList.contains('hide'));$('#over').classList.toggle('hide',state!=='over')}
 function play(){resetWorld(online);if(online&&pid)setTimeout(()=>{if(me)me.pid=pid},0);if(online)send({t:'sync'});skin.n=($('#nm').value.trim()||'Gusano').slice(0,12);saveSkin();me=mk(skin.n,skin.c,skin.p,0,25);me.sens=CT.sens;me.ax=axOf();worms[0]=me;state='play';show(true);tut=null;$('#tut').classList.add('hide');if(!online)tutStart();hud();beep(440,.15,'triangle');beep(660,.2,'triangle')}
 function over(by){state='over';show(false);reward();if(online){me.by=(by&&by.pid)||null;net()}$('#why').textContent=by?'Chocaste con '+by.name:'Chocaste con el borde de la arena';$('#o1').textContent=me.m|0;$('#o2').textContent='#'+me.rank;$('#o3').textContent=me.kills;let b=0;try{b=+localStorage.getItem('gusanix_best')||0;if((me.m|0)>b){b=me.m|0;localStorage.setItem('gusanix_best',b)}}catch(e){}$('#best').textContent='Tu mejor marca: '+b+' puntos';beep(220,.4,'sawtooth',.05);beep(150,.5,'sawtooth',.05)}
 let HS={};try{HS=JSON.parse(localStorage.getItem('gusanix_hints')||'{}')}catch(e){}
@@ -563,6 +563,6 @@ function welUI(){const li=!!user;$('#wlogd').classList.toggle('hide',!li);$('#wg
 function showWel(){if(welDone)return;welUI();$('#menu').classList.add('hide');$('#wel').classList.remove('hide');wseas();if(!wRaf)wRaf=requestAnimationFrame(wdraw)}
 function hideWel(){welDone=true;$('#wel').classList.add('hide');if(state==='menu')$('#menu').classList.remove('hide');ui()}
 $('#wl').onclick=()=>{atab=0;openAcc()};$('#wc').onclick=()=>{atab=1;openAcc()};$('#wr').onclick=()=>{atab=2;openAcc()};$('#wg').onclick=()=>{hideWel();play()};$('#wo').onclick=()=>{hideWel();$('#onl').click()};$('#wm').onclick=hideWel;
-ui();applyCtrl();cloudInit().then(()=>{if(!welDone)welUI()});setTimeout(showWel,1200);requestAnimationFrame(frame);
+ui();applyCtrl();cloudInit().then(()=>{if(!welDone)welUI()});showWel();requestAnimationFrame(frame);
 let bgT=0;setInterval(()=>{if(!document.hidden){bgT=0;return}const n=performance.now();if(!bgT){bgT=n;return}const k=Math.min(3600,Math.floor((n-bgT)/16.667));bgT+=k*16.667;for(let i=0;i<k;i++)step()},500);
 </script></body></html>
