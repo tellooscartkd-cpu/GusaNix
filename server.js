@@ -93,7 +93,7 @@ async function fbVerify(idt, kind) {
 }
 
 const server = http.createServer((req, res) => {
-  if (req.url === '/health') { res.end('ok v4 - IA por sala: ' + NBOT + ' - salas activas: ' + rooms.length); return; }
+  if (req.url === '/health') { res.end('ok v5 - IA por sala: ' + NBOT + ' - salas activas: ' + rooms.length); return; }
   if (req.url === '/' || req.url.startsWith('/?') || req.url === '/index.html') {
     fs.readFile(path.join(__dirname, 'index.html'), (e, d) => { if (e) { res.writeHead(404); res.end('Falta index.html'); } else { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache, must-revalidate' }); res.end(d); } });
     return;
