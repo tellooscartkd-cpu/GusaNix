@@ -85,7 +85,7 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 <h3>Objetivo</h3><p>Come para crecer y llega al top 1. Mientras más grande, más puntos.</p>
 <h3>Controles</h3><p>💻 PC: mueve el mouse para girar; clic o barra espaciadora = ⚡ turbo.<br>📱 Celular: arrastra el dedo (aparece un joystick flotante) y mantén el botón ⚡ para correr. En 🎮 Controles puedes cambiar a modo zurdo, sensibilidad o toque directo.</p>
 <h3>Choques</h3><p>Si tu cabeza toca el cuerpo de otro gusano, caes. Si chocan de frente nadie gana ventaja y se decide con una regla justa: nunca mueren los dos. El que golpea de lado gana, sin importar el tamaño.</p>
-<h3>Estrangular 🌀</h3><p>Rodea a otro gusano con tu cuerpo y sigue girando. Si choca contra tu anillo, te lo comes entero. Si el atrapado es más grande que tú, puede romper el anillo.</p>
+<h3>Estrangular 🌀</h3><p>Rodea a otro gusano con tu cuerpo y sigue girando. Si choca contra tu anillo, te lo comes entero.</p>
 <h3>Poderes</h3><p>⚡ Velocidad · 🌀 Aspiradora (comida y poderes) · 🔍 Lupa · ✨ x2 (20 s) · 🌟 x5 (15 s) · 💎 x10 (10 s) · 🌻 Jardín · 🎁 Piñata · 🛡️ Escudo (absorbe un golpe) · 🖐️ Manos (saltas un cuerpo) · 🦷 Mordisco (solo en modo solo).</p>
 <h3>Temporadas</h3><p>Cada mes hay una temporada. Juega 4 horas en total durante el mes para ganar la piel exclusiva. Online, ser top 1 te da tiempo extra.</p>
 <button class="btn" id="howx">Entendido</button></div></div>
@@ -285,11 +285,10 @@ for(let i=pows.length-1;i>=0;i--){const p=pows[i];if(Math.hypot(h.x-p.x,h.y-p.y)
 function angd(a,b){return Math.atan2(Math.sin(a-b),Math.cos(a-b))}
 function loses(a,b){const A=a.segs[0],B=b.segs[0],g=Math.atan2(B.y-A.y,B.x-A.x),ga=Math.abs(angd(a.ang,g)),gb=Math.abs(angd(b.ang,g+Math.PI));if(Math.abs(ga-gb)>=.349)return ga>gb;const ia=String(a.pid||a.uid),ib=String(b.pid||b.uid),k=(ia<ib?ia+'|'+ib:ib+'|'+ia)+Math.round((A.x+B.x)/1000)+Math.round((A.y+B.y)/1000);let s=0;for(let i=0;i<k.length;i++)s=(s*31+k.charCodeAt(i))>>>0;return (s&1)?ia<ib:ia>=ib}
 let claimT={};let hitT={};function hitReq(o){if(!ws||(hitT[o.pid]||0)>t)return;hitT[o.pid]=t+.4;send({t:'hit',v:o.pid})}
-function claim(o){if(!online||!ws||!o.pid||(claimT[o.pid]||0)>t||o.pw[10]>t)return;if(me&&o.trap===me&&o.m>me.m*1.15)return;claimT[o.pid]=t+1.2;send({t:'claim',v:o.pid})}
+function claim(o){if(!online||!ws||!o.pid||(claimT[o.pid]||0)>t||o.pw[10]>t)return;claimT[o.pid]=t+1.2;send({t:'claim',v:o.pid})}
 function surv(w,o,i,hd){
 if(w.pw[10]>t&&!hd&&i>1){chomp(w,o,i);return true}
 if(w.imm>t)return true;
-if(w.trap===o&&w.m>o.m*1.15&&!hd&&i>1){if(o.rem&&o.pid)send({t:'brk',v:o.pid,i});bite(w,o,i);w.imm=t+.8;if(w===me)say2('💥 ¡Rompiste el anillo!','#80ed99');return true}
 if(w.pw[8]>t){w.pw[8]=0;w.imm=t+.9;if(w===me){burst(w.segs[0].x,w.segs[0].y,'#cfd6e0',26,5);beep(300,.12,'square',.05);say2('🛡️ ¡El escudo te salvó!','#aab4c2')}return true}
 if(w.pw[9]>t){w.pw[9]=0;w.hop=t+.6;w.imm=t+.9;if(w===me){burst(w.segs[0].x,w.segs[0].y,'#f4a261',18,3);beep(520,.1,'triangle');say2('🖐️ ¡Saltaste!','#f4a261')}return true}
 return false}
@@ -304,7 +303,14 @@ function inPoly(s,n,x,y){let c=false;for(let i=0,j=n;i<=n;j=i++){const a=s[i],b=
 function rings(){for(const w of worms){w.rg=0;if(!w.alive)continue;const sg=w.segs,h=sg[0],lim=(rad(w)*2.6)**2;for(let i=Math.min(14,sg.length);i<sg.length;i+=2){const dx=h.x-sg[i].x,dy=h.y-sg[i].y;if(dx*dx+dy*dy<lim){w.rg=i;break}}}
 for(const o of worms){o.tn=null;o.ring=0}
 for(const w of worms){if(!w.rg)continue;for(const o of worms){if(o===w||!o.alive)continue;const q=o.segs[0];if(inPoly(w.segs,w.rg,q.x,q.y)){o.tn=w;w.ring=1}}}
-for(const o of worms){if(o.tn&&o.trap!==o.tn&&o===me){say2('⚠️ ¡Atrapado!','#ff4d4d',1800);beep(160,.25,'sawtooth',.05);hintOnce('trap','Estás dentro de un anillo. Sal antes de que se cierre; si eres más grande que él, choca contra el anillo para romperlo.')}if(o.tn&&o.trap!==o.tn&&o.tn===me)say2('🌀 ¡Lo atrapaste! Sigue girando','#80ed99',1800);o.trap=o.tn}}
+for(const o of worms){if(o.tn&&o.trap!==o.tn&&o===me){say2('⚠️ ¡Atrapado!','#ff4d4d',1800);beep(160,.25,'sawtooth',.05);hintOnce('trap','Estás dentro de un anillo. Sal antes de que se cierre: si tocas el anillo, te absorben.')}if(o.tn&&o.trap!==o.tn&&o.tn===me)say2('🌀 ¡Lo atrapaste! Sigue girando','#80ed99',1800);o.trap=o.tn}}
+function squeeze(dt){for(const o of worms){if(!o.alive)continue;const e=o.tn;
+if(!e||!e.alive||o.trap!==e||o.pw[10]>t||o.imm>t){o.sq=0;o.sqm=0;o.sm0=0;continue}
+o.sq=(o.sq||0)+dt;if(o.sq<1.5)continue;
+if(!o.sm0)o.sm0=o.m;
+if(!o.sqm){o.sqm=1;if(o===me)say2('🌀 ¡Te aprietan! Sal del anillo antes de que se cierre','#ff4d4d',1800);else if(e===me)say2('🌀 ¡Lo estás apretando! Sigue girando','#80ed99',1800)}
+if(o.rem)continue;
+const loss=Math.min(o.m-Math.max(10,o.sm0*.65),o.m*.03*dt);if(loss>0){o.m-=loss;if(!e.rem)e.m+=loss*.9}}}
 function hit(w){const h=w.segs[0],r=rad(w);if(Math.hypot(h.x-C,h.y-C)>R-r)return{o:null};if(w.hop>t)return null;
 for(const o of worms){if(o===w||!o.alive)continue;const or=rad(o),lim=r*.7+or*.8,oh=o.segs[0],reach=lim+o.segs.length*or*.5+10;if(Math.abs(h.x-oh.x)>reach||Math.abs(h.y-oh.y)>reach)continue;if((h.x-oh.x)**2+(h.y-oh.y)**2<lim*lim){if(loses(w,o)){if(surv(w,o,0,1))continue;return{o}}if(o.rem)claim(o);continue}if(o.hop>t)continue;for(let i=0;i<o.segs.length;i+=2){const sg=o.segs[i],dx=h.x-sg.x,dy=h.y-sg.y;if(dx*dx+dy*dy<lim*lim){if(surv(w,o,i,0))return null;return{o}}}}return null}
 function bite(w,o,i){const cut=o.segs.splice(i),n=i+cut.length,v=Math.max(1,o.m*(1-i/n)*.7/(cut.length/2));for(let j=0;j<cut.length;j+=2)addFood(cut[j].x,cut[j].y,o.ci,v,1);o.m=Math.max(10,o.m*i/n);if(w===me||o===me){burst(cut[0].x,cut[0].y,'#ff6b6b',25,4);beep(180,.15,'sawtooth',.05)}}
@@ -333,9 +339,9 @@ for(let i=0;i<worms.length;i++){const w=worms[i];if(!w.alive&&w.ai&&--w.tmr<=0)w
 if(online){cellTick();if(tick%6==0&&state!=='menu')net()}else for(let k=0;k<3&&reg<NF;k++)spawnFood();if(!online&&pows.length<24&&tick%90==0)pows.push({x:rnd(150,WS-150),y:rnd(150,WS-150),k:pk(),ph:rnd(0,6)});
 for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.y-=.9;p.l-=.02;if(p.l<=0){pops[i]=pops[pops.length-1];pops.pop()}}
 for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vx*=.95;p.vy*=.95;p.l-=.03;if(p.l<=0){parts[i]=parts[parts.length-1];parts.pop()}}
-const f0=worms[0],hh=f0.segs[0],zt=Math.max(.07,1.75*Math.pow(10/Math.max(10,rad(f0)),1.18)*Math.max(.78,Math.min(1.2,Math.min(W,H)/700))*(f0.pw[2]>t?.65:1));
+const f0=worms[0],hh=f0.segs[0],zq=Math.min(1,Math.max(0,(rad(f0)-10)/70)),zt=Math.max(.15,(1.75-1.5*Math.pow(zq,.6))*Math.max(.78,Math.min(1.2,Math.min(W,H)/700))*(f0.pw[2]>t?.65:1));
 cam.x+=(hh.x-cam.x)*.12;cam.y+=(hh.y-cam.y)*.12;cam.z+=(zt-cam.z)*.03;
-if(tick%3==0)rings();if(tick%30==0)for(const w of worms)if(w.wd&&w.wd.length)w.wd=w.wd.filter(q=>t-q.t<10);meta();if(state==='play'&&tick%10==0){hud()}}
+if(tick%3==0){rings();squeeze(3/60)}if(tick%30==0)for(const w of worms)if(w.wd&&w.wd.length)w.wd=w.wd.filter(q=>t-q.t<10);meta();if(state==='play'&&tick%10==0){hud()}}
 function hud(){const L=worms.filter(w=>w.alive).sort((a,b)=>b.m-a.m);rank=L.indexOf(me)+1;$('#sc').textContent=me.m|0;$('#rk').textContent='Puesto '+rank+'/'+worms.length;$('#kl').textContent='⚔ '+me.kills;{let hu=0,bo=0;if(online)for(const w of worms)if(w.rem&&w.alive){if(String(w.pid)[0]=='b')bo++;else hu++}$('#hint').textContent=online?'🌐 En línea · '+(hu+1)+' jugadores · '+bo+' IA':'Clic o espacio = ⚡ turbo';if(online&&act()){const t1=rank===1&&hu+1>=3;if(t1){if(!me.t1&&t-(me.t1t||-999)>60){me.t1t=t;addB(120);say2('👑 ¡Top 1! +2 min de temporada','#ffd23f',2200)}else addB(10/60)}me.t1=t1}}$('#pw').innerHTML=PW.map((e,k)=>me.pw[k]>t?'<span style="color:'+PWC[k]+'">'+e+' '+Math.ceil(me.pw[k]-t)+'s</span>':'').join('');
 $('#lb').innerHTML='<b>🏆 Clasificación</b>'+L.slice(0,tmOn()?5:10).map((w,i)=>'<div class="r'+(w===me?' me':'')+'"><span>'+(i+1)+'. '+esc(w.name)+'</span><b>'+(w.m|0)+'</b></div>').join('')+(rank>(tmOn()?5:10)?'<div class="r me"><span>'+rank+'. '+esc(me.name)+'</span><b>'+(me.m|0)+'</b></div>':'')}
 function star(g,x,y,r,rot,f){g.fillStyle=f;g.beginPath();for(let i=0;i<8;i++){const a=rot+i*.7854,d=i%2?r*.4:r;g.lineTo(x+Math.cos(a)*d,y+Math.sin(a)*d)}g.closePath();g.fill()}
@@ -469,7 +475,7 @@ decor(v);
 ctx.restore();fence(v);
 for(const f of foods){if(f.x<v[0]||f.x>v[1]||f.y<v[2]||f.y>v[3])continue;const b=1+.12*Math.sin(t*4+f.ph);if(f.t<0){const s=f.r*4*b;ctx.globalAlpha=.8+.2*Math.sin(t*7+f.ph);ctx.drawImage(orb(f.c),f.x-s/2,f.y-s/2,s,s);ctx.globalAlpha=1}else{const s=f.r*2.6*b;ctx.drawImage(spr[f.t],f.x-s/2,f.y-s/2,s,s)}}
 for(const p of pows){if(p.x<v[0]||p.x>v[1]||p.y<v[2]||p.y>v[3])continue;const b=1+.15*Math.sin(t*5+p.ph),s=70*b;ctx.globalAlpha=.9;ctx.drawImage(orb(PWC[p.k]),p.x-s,p.y-s,s*2,s*2);ctx.globalAlpha=1;ctx.drawImage(pspr[p.k],p.x-22*b,p.y-22*b,44*b,44*b)}
-const sorted=worms.filter(w=>w.alive).sort((a,b)=>a.m-b.m);for(const w of sorted)drawWorm(w,v);
+const sorted=worms.filter(w=>w.alive).sort((a,b)=>a.m-b.m);for(const w of sorted)drawWorm(w,v);for(const w of sorted)if(w.sq>1.5){const h=w.segs[0],r=rad(w);ctx.save();ctx.strokeStyle='rgba(255,60,60,'+(.55+.4*Math.sin(t*14))+')';ctx.lineWidth=Math.max(2,r*.3);ctx.beginPath();ctx.arc(h.x,h.y,r*(1.9+.35*Math.sin(t*14)),0,6.283);ctx.stroke();ctx.restore()}
 for(const p of parts){ctx.globalAlpha=Math.max(0,p.l);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,6.283);ctx.fill()}ctx.textAlign='center';for(const p of pops){const k=p.big?1.5:1;ctx.globalAlpha=Math.min(1,p.l*1.5);ctx.font='bold '+Math.round(20*k/cam.z)+'px "Trebuchet MS",sans-serif';ctx.lineWidth=4;ctx.strokeStyle='#000b';ctx.fillStyle=p.big?'#ffd23f':'#fff';ctx.strokeText(p.s,p.x,p.y);ctx.fillText(p.s,p.x,p.y)}ctx.globalAlpha=1;
 ctx.restore();
 if(state==='play'){mm.clearRect(0,0,120,120);mm.fillStyle='rgba(99,178,68,.55)';mm.beginPath();mm.arc(60,60,R*120/WS,0,6.283);mm.fill();const k=120/WS;for(const w of worms){if(!w.alive)continue;const h=w.segs[0];mm.fillStyle=COLORS[w.ci];mm.beginPath();mm.arc(h.x*k,h.y*k,w===me?4:2.5,0,6.3);mm.fill();if(w===me){mm.strokeStyle='#fff';mm.lineWidth=1.5;mm.stroke()}}}
