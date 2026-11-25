@@ -108,16 +108,16 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 <div id="af"><div id="tabs"><button class="on">Entrar</button><button>Crear cuenta</button><button>Recuperar</button></div>
 <input id="au" maxlength="16" placeholder="Usuario" autocomplete="username">
 <input id="ap" type="password" maxlength="64" placeholder="Contraseña (mín. 6)" autocomplete="current-password">
-<input id="ae" class="hide" placeholder="Correo o celular (opcional) para recuperar" autocomplete="email">
-<div id="rmode" class="hide"><button class="on">Con código GX4</button><button>Con correo / SMS</button></div>
+<input id="ae" class="hide" placeholder="Celular (opcional) para recuperar · 3001234567" autocomplete="tel">
+<div id="rmode" class="hide"><button class="on">Con código GX4</button><button>Con celular (SMS)</button></div>
 <input id="ar" class="hide" placeholder="Código de recuperación">
-<div id="rs" class="hide"><button class="btn s" id="asend">Enviar código a mi correo/celular</button><input id="ac" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos"></div>
+<div id="rs" class="hide"><input id="rp" placeholder="Tu celular (3001234567)" autocomplete="tel"><button class="btn s" id="asend">Enviar código por SMS</button><input id="ac" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos"></div>
 <button class="btn" id="asub">Entrar</button></div>
 <div id="ao" class="hide sub">Sesión iniciada como <b></b>
-<div id="ct" style="margin:12px 0 4px"></div><input id="ce" placeholder="Correo o celular (+57300…)" autocomplete="email"><input id="cc" class="hide" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos">
-<button class="btn s" id="cset">Vincular correo / celular</button><button class="btn s hide" id="cok">Confirmar código</button><button class="btn s hide" id="cdel">Quitar</button>
+<div id="ct" style="margin:12px 0 4px"></div><input id="ce" placeholder="Celular (3001234567)" autocomplete="tel"><input id="cc" class="hide" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos">
+<button class="btn s" id="cset">Vincular celular</button><button class="btn s hide" id="cok">Confirmar código</button><button class="btn s hide" id="cdel">Quitar</button>
 <button class="btn s" id="alo">Cerrar sesión</button></div>
-<div id="am" class="sub" style="margin-top:12px"></div><button class="btn s" id="ax">Volver</button></div></div>
+<div id="rcap"></div><div id="am" class="sub" style="margin-top:12px"></div><button class="btn s" id="ax">Volver</button></div></div>
 <script>
 // ⚙️ Si subes este archivo a Netlify, pon aquí la dirección de tu servidor, por ejemplo: wss://gusanix.onrender.com
 // Si el servidor ya sirve este mismo archivo (recomendado), déjalo vacío.
@@ -179,7 +179,7 @@ for(const G of[{s:'h',t:'Sombreros y gorros'},{s:'t',t:'Camisas y cuello'},{s:'g
 $('#grid').innerHTML=h}
 let welDone=false,online=false,room=null,rem={},fm={},off={},eaten=[],eq=0,pid=null,acct='',cref=null,ct=0,pu=null;
 function say(m){$('#wal').textContent=m}
-let le=0,ws=null,wsReady=null,pend=[],tok='',user=null,myPeer=null,peerMap={},atab=0,rmode=0,ctm='',ctv=false,ctSent=false;
+let le=0,ws=null,wsReady=null,pend=[],tok='',user=null,myPeer=null,peerMap={},atab=0,rmode=0,ctm='',ctv=false,fbConf=null;
 try{tok=localStorage.getItem('gusanix_tok')||''}catch(e){}
 const SHIM={peers:()=>Object.values(peerMap),presence:o=>{send({t:'p',g:o.g});return Promise.resolve()}};
 function wsURL(){return SERVER||((location.protocol==='https:'?'wss://':'ws://')+location.host)}
@@ -203,20 +203,28 @@ function accUI(){const li=!!user;$('#af').classList.toggle('hide',li);$('#ao').c
 $('#ae').classList.toggle('hide',atab!=1);$('#rmode').classList.toggle('hide',atab!=2);$('#ar').classList.toggle('hide',!(atab==2&&rmode==0));$('#rs').classList.toggle('hide',!(atab==2&&rmode==1));
 document.querySelectorAll('#rmode button').forEach((b,i)=>b.classList.toggle('on',i==rmode));
 $('#asub').textContent=['Entrar','Crear cuenta','Cambiar contraseña'][atab];$('#ap').placeholder=atab==2?'Nueva contraseña (mín. 6)':'Contraseña (mín. 6)';document.querySelectorAll('#tabs button').forEach((b,i)=>b.classList.toggle('on',i==atab));
-if(li){$('#ct').innerHTML=ctm?(ctv?'✅ Recuperación por correo/SMS activa<br><b>'+esc(ctm)+'</b>':'⏳ Falta confirmar <b>'+esc(ctm)+'</b>. Escribe el código que te llegó.'):'🔒 Añade un correo o celular para poder recuperar tu cuenta si olvidas la contraseña.';
-const pend=!!ctm&&!ctv;$('#cc').classList.toggle('hide',!pend);$('#cok').classList.toggle('hide',!pend);$('#cdel').classList.toggle('hide',!ctm);$('#ce').classList.toggle('hide',!!ctm&&ctv);$('#cset').classList.toggle('hide',!!ctm&&ctv);$('#cset').textContent=pend?'Reenviar código / cambiar':'Vincular correo / celular'}}
+if(li){$('#ct').innerHTML=ctm?(ctv?'✅ Recuperación por SMS activa<br><b>'+esc(ctm)+'</b>':'⏳ Falta confirmar el celular. Escribe el código que te llegó por SMS.'):(fbConf?'⏳ Escribe el código que te llegó por SMS.':'🔒 Añade tu celular para poder recuperar tu cuenta si olvidas la contraseña.');
+const pend=!!fbConf;$('#cc').classList.toggle('hide',!pend);$('#cok').classList.toggle('hide',!pend);$('#cdel').classList.toggle('hide',!ctm);$('#ce').classList.toggle('hide',!!ctm&&ctv);$('#cset').classList.toggle('hide',!!ctm&&ctv);$('#cset').textContent=pend?'Reenviar código / cambiar':'Vincular celular'}}
 function openAcc(){welDone=true;$('#wel').classList.add('hide');$('#acc').classList.remove('hide');$('#menu').classList.add('hide');$('#am').textContent='';accUI()}
 function closeAcc(){$('#acc').classList.add('hide');$('#menu').classList.remove('hide');ui()}
 document.querySelectorAll('#tabs button').forEach((b,i)=>b.onclick=()=>{atab=i;$('#am').textContent='';accUI()});
 document.querySelectorAll('#rmode button').forEach((b,i)=>b.onclick=()=>{rmode=i;$('#am').textContent='';accUI()});
 $('#accb').onclick=openAcc;$('#ax').onclick=closeAcc;
 $('#alo').onclick=()=>{send({t:'out',tok});user=null;acct='';tok='';try{localStorage.removeItem('gusanix_tok')}catch(e){}if(ws)ws.au=0;accUI();ui()};
-$('#asub').onclick=async()=>{const u=$('#au').value.trim(),p=$('#ap').value,am=$('#am');am.textContent='Conectando...';try{await connect();const m=await req(atab==0?{t:'login',u,p}:atab==1?{t:'reg',u,p,c:$('#ae').value.trim()||undefined}:rmode==1?{t:'rv',u,code:$('#ac').value.trim(),p}:{t:'rec',u,rc:$('#ar').value.trim(),p});if(m.t=='err'){am.textContent=m.m;return}applyAuth(m);$('#ap').value='';accUI();if(m.rc){am.innerHTML='✅ Cuenta lista.<br><b style="font-size:20px;color:#ffd23f">'+esc(m.rc)+'</b><br>Este es tu código de recuperación. Guárdalo (captura o papel): sin él no podrás recuperar la cuenta si olvidas la contraseña.'+(m.ct&&!m.cv?'<br>📨 Te enviamos un código a '+esc(m.ct)+'. Escríbelo abajo para activar la recuperación por correo/SMS.'+(m.dev?' (modo pruebas: '+m.dev+')':''):'')}else{am.textContent='';closeAcc()}}catch(e){am.textContent='No se pudo conectar al servidor.'}};
-$('#asend').onclick=async()=>{const u=$('#au').value.trim(),am=$('#am');if(!u){am.textContent='Escribe tu usuario';return}am.textContent='Enviando...';try{await connect();const m=await req({t:'rq',u});am.textContent=m.t=='err'?m.m:m.e?m.e:'📨 Si tu cuenta tiene un correo o celular confirmado, te enviamos un código de 6 dígitos (vence en 10 min).'+(m.dev?' (modo pruebas: '+m.dev+')':'')}catch(e){am.textContent='No se pudo conectar al servidor.'}};
-$('#cset').onclick=async()=>{const am=$('#am'),c=$('#ce').value.trim();if(!c){am.textContent='Escribe tu correo o celular';return}am.textContent='Enviando...';try{await connect();const m=await req({t:'ctset',c});if(m.t=='err'||m.e){am.textContent=m.e||m.m;return}ctm=m.ct;ctv=false;$('#ce').value='';accUI();am.textContent='📨 Te enviamos un código de 6 dígitos'+(m.real?'.':' (el servidor aún no tiene envío configurado).')+(m.dev?' Modo pruebas: '+m.dev:'')}catch(e){am.textContent='No se pudo conectar al servidor.'}};
-$('#cok').onclick=async()=>{const am=$('#am');try{await connect();const m=await req({t:'ctok',code:$('#cc').value.trim()});if(m.t=='err'||m.e){am.textContent=m.e||m.m;return}ctm=m.ct;ctv=true;$('#cc').value='';accUI();am.textContent='✅ Listo: ya puedes recuperar tu cuenta con ese correo/celular.'}catch(e){am.textContent='No se pudo conectar al servidor.'}};
+$('#asub').onclick=async()=>{const u=$('#au').value.trim(),p=$('#ap').value,am=$('#am');am.textContent='Conectando...';try{await connect();const m=await req(atab==0?{t:'login',u,p}:atab==1?{t:'reg',u,p}:rmode==1?{t:'rfb',u,idt:await fbTokenR(),p}:{t:'rec',u,rc:$('#ar').value.trim(),p});if(m.t=='err'){am.textContent=m.m;return}applyAuth(m);$('#ap').value='';let pendPh=false;if(atab==1&&$('#ae').value.trim()){try{fbConf=await fbSend($('#ae').value);pendPh=true}catch(e){am.textContent=fbErr(e)}}if(atab==2){fbConf=null;rconf=null}accUI();if(m.rc){am.innerHTML='✅ Cuenta lista.<br><b style="font-size:20px;color:#ffd23f">'+esc(m.rc)+'</b><br>Este es tu código de recuperación. Guárdalo (captura o papel): sin él no podrás recuperar la cuenta si olvidas la contraseña.'+(pendPh?'<br>📨 Te enviamos un SMS. Escribe el código abajo para activar la recuperación por celular.':'')}else{am.textContent='';closeAcc()}}catch(e){am.textContent=e&&e.message=='nosms'?'Primero toca "Enviar código por SMS"':e&&e.code?fbErr(e):'No se pudo conectar al servidor.'}};
+const FBCFG={apiKey:"AIzaSyAolZQqeiLPqXbSSK3v0_ZS-FfsiVOxm7s",authDomain:"gusanix-b5829.firebaseapp.com",projectId:"gusanix-b5829",appId:"1:925172695912:web:0ea551906a973e3da98cdd"};
+let FB=null;
+async function fbInit(){if(FB)return FB;const V='10.12.2',a=await import('https://www.gstatic.com/firebasejs/'+V+'/firebase-app.js'),b=await import('https://www.gstatic.com/firebasejs/'+V+'/firebase-auth.js'),app=a.initializeApp(FBCFG),auth=b.getAuth(app);auth.languageCode='es';FB={b,auth,rv:null};return FB}
+function normPh(s){s=String(s||'').replace(/[^\d+]/g,'');if(s[0]=='+')return s;if(/^3\d{9}$/.test(s))return '+57'+s;if(/^57\d{10}$/.test(s))return '+'+s;return ''}
+async function fbSend(raw){const ph=normPh(raw);if(!ph)throw new Error('badph');const f=await fbInit();if(f.rv){try{f.rv.clear()}catch(e){}f.rv=null}$('#rcap').innerHTML='';f.rv=new f.b.RecaptchaVerifier(f.auth,$('#rcap'),{size:'invisible'});try{return await f.b.signInWithPhoneNumber(f.auth,ph,f.rv)}catch(e){try{f.rv.clear()}catch(x){}f.rv=null;throw e}}
+async function fbToken(conf,code){const cr=await conf.confirm(String(code||'').trim()),idt=await cr.user.getIdToken();try{await FB.b.signOut(FB.auth)}catch(e){}return idt}
+function fbErr(e){const c=e&&e.code||'';return e&&e.message=='badph'?'Escribe un celular válido (ej: 3001234567 o +573001234567)':c.includes('invalid-phone')?'Número de celular inválido':c.includes('too-many')?'Demasiados intentos. Espera un rato y vuelve a probar.':c.includes('invalid-verification')||c.includes('code-expired')?'Código incorrecto o vencido':c.includes('operation-not-allowed')?'El envío de SMS aún no está activado en Firebase':c.includes('billing')||c.includes('quota')?'Se agotó el límite de SMS':c.includes('unauthorized-domain')?'Este sitio no está autorizado en Firebase':'No se pudo enviar el SMS. Intenta de nuevo.'}
+let rconf=null;async function fbTokenR(){if(!rconf)throw new Error('nosms');return fbToken(rconf,$('#ac').value)}
+$('#asend').onclick=async()=>{const am=$('#am');if(!$('#au').value.trim()){am.textContent='Escribe tu usuario';return}am.textContent='Enviando SMS...';try{rconf=await fbSend($('#rp').value);am.textContent='📨 Te enviamos un código de 6 dígitos por SMS. Escríbelo abajo con tu nueva contraseña.'}catch(e){am.textContent=fbErr(e)}};
+$('#cset').onclick=async()=>{const am=$('#am');am.textContent='Enviando SMS...';try{fbConf=await fbSend($('#ce').value);accUI();am.textContent='📨 Te enviamos un código de 6 dígitos por SMS.'}catch(e){am.textContent=fbErr(e)}};
+$('#cok').onclick=async()=>{const am=$('#am');if(!fbConf)return;am.textContent='Verificando...';try{const idt=await fbToken(fbConf,$('#cc').value);await connect();const m=await req({t:'ctfb',idt});if(m.t=='err'||m.e){am.textContent=m.e||m.m;return}fbConf=null;ctm=m.ct;ctv=true;$('#cc').value='';$('#ce').value='';accUI();am.textContent='✅ Listo: ya puedes recuperar tu cuenta con ese celular.'}catch(e){am.textContent=fbErr(e)}};
 $('#cdel').onclick=async()=>{try{await connect();await req({t:'ctdel'});ctm='';ctv=false;accUI();$('#am').textContent='Correo/celular quitado.'}catch(e){}};
-for(const id of['#ac','#cc','#ce','#ae'])$(id).addEventListener('keydown',e=>e.stopPropagation());
+for(const id of['#ac','#cc','#ce','#ae','#rp'])$(id).addEventListener('keydown',e=>e.stopPropagation());
 for(const id of['#ap','#ar','#au'])$(id).addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')$('#asub').click()});
 setInterval(()=>send({t:'ping'}),25000);
 function addCell(c){const h=Math.imul(c+1,2654435761)>>>0,gx=c%40,gy=(c/40)|0,x=gx*180+90+((h&255)/255-.5)*120,y=gy*180+90+(((h>>8)&255)/255-.5)*120;if(Math.hypot(x-C,y-C)>R-150)return;addFood(x,y,0,0,0,'c'+c,(h>>>16)%8)}
@@ -551,7 +559,7 @@ for(const o of objs){const z=o.d,fy=hz+(H-hz)*(.12+z*.8);
 q=wg.createRadialGradient(W/2,H*.55,Math.min(W,H)*.35,W/2,H*.55,Math.max(W,H)*.8);q.addColorStop(0,'#0000');q.addColorStop(1,'#000a');wg.fillStyle=q;wg.fillRect(0,0,W,H)}
 function showWel(){if(welDone||user)return;$('#menu').classList.add('hide');$('#wel').classList.remove('hide');wseas();if(!wRaf)wRaf=requestAnimationFrame(wdraw)}
 function hideWel(){welDone=true;$('#wel').classList.add('hide');if(state==='menu')$('#menu').classList.remove('hide');ui()}
-$('#wl').onclick=()=>{atab=0;openAcc()};$('#wc').onclick=()=>{atab=1;openAcc()};$('#wr').onclick=()=>{atab=2;openAcc()};$('#wg').onclick=hideWel;
+$('#wl').onclick=()=>{atab=0;openAcc()};$('#wc').onclick=()=>{atab=1;openAcc()};$('#wr').onclick=()=>{atab=2;openAcc()};$('#wg').onclick=()=>{hideWel();play()};
 ui();applyCtrl();cloudInit().then(()=>{if(user&&!welDone)hideWel()});setTimeout(()=>{if(user)hideWel();else showWel()},1200);requestAnimationFrame(frame);
 let bgT=0;setInterval(()=>{if(!document.hidden){bgT=0;return}const n=performance.now();if(!bgT){bgT=n;return}const k=Math.min(3600,Math.floor((n-bgT)/16.667));bgT+=k*16.667;for(let i=0;i<k;i++)step()},500);
 </script></body></html>
