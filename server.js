@@ -58,9 +58,10 @@ let acc=0,k=T.length-1,px=h.x,py=h.y,i=1;
 while(i<s.length&&k>=0){const q=T[k],dx=q.x-px,dy=q.y-py,d=Math.sqrt(dx*dx+dy*dy);if(acc+d>=sd){const f=d>0?(sd-acc)/d:0;px+=dx*f;py+=dy*f;s[i].x=px;s[i].y=py;i++;acc=0}else{acc+=d;px=q.x;py=q.y;k--}}
 for(;i<s.length;i++){s[i].x=px;s[i].y=py}
 if(k>40)T.splice(0,k-8)}
+const HL = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 22, 23, 24], TL = [10, 11, 12, 13, 14, 15, 16, 27], GL = [17, 18, 19, 20, 21, 25, 26];
 function newBot(r) {
   const [x, y] = rp(500), a = rnd(0, 6.28);
-  const b = { id: 'b' + (++r.nb), name: BN[Math.random() * BN.length | 0], ci: Math.random() * 8 | 0, pi: Math.random() * 9 | 0, m: rnd(15, 45), ang: a, tang: a, alive: 1, tmr: Math.random() * 15 | 0, tgt: null, tt: 0, segs: [], e: [], q: 0, ne: 0, isNew: 1, sent: 0, rt: 0 };
+  const b = { id: 'b' + (++r.nb), name: BN[Math.random() * BN.length | 0], ci: Math.random() * 8 | 0, pi: Math.random() * 9 | 0, m: rnd(15, 45), ang: a, tang: a, alive: 1, tmr: Math.random() * 15 | 0, tgt: null, tt: 0, segs: [], e: [], q: 0, ne: 0, isNew: 1, sent: 0, rt: 0, z: [Math.random() < .45 ? HL[Math.random() * HL.length | 0] : -1, Math.random() < .4 ? TL[Math.random() * TL.length | 0] : -1, Math.random() < .3 ? GL[Math.random() * GL.length | 0] : -1] };
   for (let i = 0; i < nseg(b); i++) b.segs.push({ x: x - Math.cos(a) * i * rad(b) * .5, y: y - Math.sin(a) * i * rad(b) * .5 });
   return b;
 }
@@ -124,7 +125,7 @@ function killB(r, b, by) {
   for (let i = 0; i < n && b.d.length < 130; i += 2) b.d.push([Math.round(b.segs[i].x), Math.round(b.segs[i].y)]);
   b.dv = v; b.by = by; b.rt = 60; addOrbs(r, b.id, b.d, v, b.ci);
 }
-function botG(b, full) { const g = { x: Math.round(b.segs[0].x), y: Math.round(b.segs[0].y), a: +b.ang.toFixed(2), m: Math.round(b.m), b: 0, al: 1 }; if (full) { g.n = b.name; g.c = b.ci; g.p = b.pi; g.e = b.e; g.q = b.q; } return g; }
+function botG(b, full) { const g = { x: Math.round(b.segs[0].x), y: Math.round(b.segs[0].y), a: +b.ang.toFixed(2), m: Math.round(b.m), b: 0, al: 1 }; if (full) { g.n = b.name; g.c = b.ci; g.p = b.pi; g.z = b.z; g.e = b.e; g.q = b.q; } return g; }
 function simulate(r, now) {
   const W = [];
   for (const [id, e] of r.peers) {   // cuerpos de jugadores reconstruidos desde la cabeza
@@ -229,6 +230,8 @@ wss.on('connection', (ws, req) => {
         if (nd && nd.SV && typeof nd.SV === 'object') {
           const v = nd.SV; v.sT = v.sT && typeof v.sT === 'object' ? v.sT : {}; v.sB = v.sB && typeof v.sB === 'object' ? v.sB : {};
           v.own = Array.isArray(v.own) ? v.own.filter(x => Number.isInteger(x)) : [0, 1, 2]; v.claimed = Array.isArray(v.claimed) ? v.claimed.filter(x => typeof x === 'string') : [];
+          v.oa = Array.isArray(v.oa) ? [...new Set(v.oa.filter(x => Number.isInteger(x) && x >= 0 && x < 40))] : [];
+          if (nd.skin) for (const k of ['h', 't', 'g']) { const q = nd.skin[k]; nd.skin[k] = Number.isInteger(q) && v.oa.includes(q) ? q : -1; }
           const wall = U.lastSave ? (now - U.lastSave) / 1000 + 90 : 86400;   // el tiempo acreditado no puede superar el tiempo real transcurrido
           for (const n of Object.keys(v.sT)) { const o = (old.sT && +old.sT[n]) || 0; let x = +v.sT[n] || 0; x = Math.min(x, Math.max(0, (now - sStart(+n)) / 1000), o + wall); v.sT[n] = x > 0 ? Math.round(x) : 0; }
           for (const n of Object.keys(v.sB)) { let x = Math.min(+v.sB[n] || 0, 3600, v.sT[n] || 0); v.sB[n] = x > 0 ? Math.round(x) : 0; }
