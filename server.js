@@ -78,7 +78,7 @@ async function fbKeys() {
   if (Date.now() < FBK.exp) return FBK.keys;
   FBK = { exp: Date.now() + 3600000, keys: await getJSON('https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com') }; return FBK.keys;
 }
-async function fbVerify(idt) {
+async function fbVerify(idt, kind) {
   try {
     const [h, p, sg] = String(idt || '').split('.'); if (!h || !p || !sg) return null;
     const H = JSON.parse(Buffer.from(h, 'base64url')), P = JSON.parse(Buffer.from(p, 'base64url')), pem = (await fbKeys())[H.kid];
@@ -86,6 +86,7 @@ async function fbVerify(idt) {
     if (!crypto.createVerify('RSA-SHA256').update(h + '.' + p).verify(pem, Buffer.from(sg, 'base64url'))) return null;
     const n = Date.now() / 1000;
     if (P.aud !== FB_PROJECT || P.iss !== 'https://securetoken.google.com/' + FB_PROJECT || !P.sub || P.exp < n || P.iat > n + 60) return null;
+    if (kind === 'email') { if (!P.firebase || P.firebase.sign_in_provider !== 'password' || P.email_verified !== true || !/^[^\s@]{1,64}@[^\s@]{1,190}\.[A-Za-z]{2,}$/.test(P.email || '')) return null; P.email = P.email.toLowerCase(); return P; }
     if (!P.firebase || P.firebase.sign_in_provider !== 'phone' || !/^\+\d{8,15}$/.test(P.phone_number || '')) return null;
     return P;
   } catch (e) { return null; }
@@ -344,6 +345,22 @@ wss.on('connection', (ws, req) => {
         if (p.length < 6 || p.length > 64) return send(ws, { t: 'err', m: 'La nueva contraseña debe tener al menos 6 caracteres' });
         const P = await fbVerify(m.idt);
         if (!P || !U || !U.ct || !U.ct.ok || U.ct.k !== 'p' || U.ct.v !== P.phone_number) { fail(ip); return send(ws, { t: 'err', m: 'Ese celular no está vinculado a esa cuenta' }); }
+        const rc = rcode(); U.salt = rid(8); U.hash = scrypt(p, U.salt); U.rs = rid(8); U.rh = scrypt(normRc(rc), U.rs);
+        for (const h of U.toks || []) delete TOK[h]; U.toks = [];
+        const a = auth(k); a.rc = rc; send(ws, a); break;
+      }
+      case 'ctem': {    // vincular correo confirmado por Firebase (enlace mágico)
+        if (!ws.u) return; const k = ws.u.toLowerCase(), U = DB.users[k];
+        if (blocked(ip)) return send(ws, { t: 'ctr', e: 'Demasiados intentos. Espera unos minutos.' });
+        const P = await fbVerify(m.idt, 'email'); if (!P) { fail(ip); return send(ws, { t: 'ctr', e: 'No se pudo verificar el correo. Pide un enlace nuevo.' }); }
+        U.ct = { k: 'e', v: P.email, ok: 1 }; saveDB(); send(ws, { t: 'ctr', ok: 1, ct: maskCt(U.ct), cv: 1 }); break;
+      }
+      case 'rem': {     // recuperar contraseña con correo confirmado por Firebase
+        const { p, k } = cred(); const U = DB.users[k];
+        if (blocked(ip)) return send(ws, { t: 'err', m: 'Demasiados intentos. Espera unos minutos.' });
+        if (p.length < 6 || p.length > 64) return send(ws, { t: 'err', m: 'La nueva contraseña debe tener al menos 6 caracteres' });
+        const P = await fbVerify(m.idt, 'email');
+        if (!P || !U || !U.ct || !U.ct.ok || U.ct.k !== 'e' || U.ct.v !== P.email) { fail(ip); return send(ws, { t: 'err', m: 'Ese correo no está vinculado a esa cuenta' }); }
         const rc = rcode(); U.salt = rid(8); U.hash = scrypt(p, U.salt); U.rs = rid(8); U.rh = scrypt(normRc(rc), U.rs);
         for (const h of U.toks || []) delete TOK[h]; U.toks = [];
         const a = auth(k); a.rc = rc; send(ws, a); break;
