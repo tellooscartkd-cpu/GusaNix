@@ -114,7 +114,7 @@ for (let c = 0; c < 1600; c++) {   // misma fórmula que el cliente
   const v = EMOV[(h >>> 16) % 8], f = { id: 'c' + c, x, y, v, sz: 7 + v * 1.8 }; cells.push(f); cellById[f.id] = f;
 }
 const BN = ['Pipo','Lola','Gusi','Max','Nube','Rayo','Kiwi','Toby','Luna','Zeta','Coco','Bimbo','Fufi','Tito','Nina','Bruno','Chispa','Mango','Pelusa','Tango'];
-const PK = [[0, 3], [1, 3], [2, 3], [3, 3], [4, 1.5], [5, .7], [6, 1], [7, 1], [8, 1.5], [9, 1], [10, 1.2]];   // 0 velocidad, 1 aspiradora, 2 lupa, 3-5 puntos x2/x5/x10, 6 jardín, 7 piñata, 8 escudo, 9 manos (sin mordisco en línea)
+const PK = [[0, 3], [1, 3], [2, 3], [3, 3], [4, 1.5], [5, .7], [6, 1], [7, 1], [8, 1.5], [9, 1], [10, 1.2], [11, 1.3]];   // 0 velocidad, 1 aspiradora, 2 lupa, 3-5 puntos x2/x5/x10, 6 jardín, 7 piñata, 8 escudo, 9 manos (sin mordisco en línea)
 function chain(w) {const s=w.segs,sd=rad(w)*.5,h=s[0];let T=w.tr;if(!T){T=w.tr=[];for(let i=s.length-1;i>=0;i--)T.push({x:s[i].x,y:s[i].y})}
 const L=T[T.length-1];if(!L||(h.x-L.x)**2+(h.y-L.y)**2>=2.25)T.push({x:h.x,y:h.y});
 const n=nseg(w);while(s.length<n){const q=s[s.length-1];s.push({x:q.x,y:q.y})}while(s.length>n)s.pop();
