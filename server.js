@@ -51,15 +51,17 @@ for (let c = 0; c < 1600; c++) {   // misma fórmula que el cliente
 }
 const BN = ['Pipo','Lola','Gusi','Max','Nube','Rayo','Kiwi','Toby','Luna','Zeta','Coco','Bimbo','Fufi','Tito','Nina','Bruno','Chispa','Mango','Pelusa','Tango'];
 const PK = [[0, 3], [1, 3], [2, 3], [3, 3], [4, 1.5], [5, .7], [6, 1], [7, 1], [8, 1.5], [9, 1]];   // 0 velocidad, 1 aspiradora, 2 lupa, 3-5 puntos x2/x5/x10, 6 jardín, 7 piñata, 8 escudo, 9 manos (sin mordisco en línea)
-function chain(w) {
-  const s = w.segs, sd = rad(w) * .5;
-  for (let i = 1; i < s.length; i++) { const a = s[i - 1], b = s[i], dx = a.x - b.x, dy = a.y - b.y, d = Math.hypot(dx, dy) || 1; if (d > sd) { b.x = a.x - dx / d * sd; b.y = a.y - dy / d * sd; } }
-  const n = nseg(w); while (s.length < n) { const q = s[s.length - 1]; s.push({ x: q.x, y: q.y }); } while (s.length > n) s.pop();
-}
+function chain(w) {const s=w.segs,sd=rad(w)*.5,h=s[0];let T=w.tr;if(!T){T=w.tr=[];for(let i=s.length-1;i>=0;i--)T.push({x:s[i].x,y:s[i].y})}
+const L=T[T.length-1];if(!L||(h.x-L.x)**2+(h.y-L.y)**2>=2.25)T.push({x:h.x,y:h.y});
+const n=nseg(w);while(s.length<n){const q=s[s.length-1];s.push({x:q.x,y:q.y})}while(s.length>n)s.pop();
+let acc=0,k=T.length-1,px=h.x,py=h.y,i=1;
+while(i<s.length&&k>=0){const q=T[k],dx=q.x-px,dy=q.y-py,d=Math.sqrt(dx*dx+dy*dy);if(acc+d>=sd){const f=d>0?(sd-acc)/d:0;px+=dx*f;py+=dy*f;s[i].x=px;s[i].y=py;i++;acc=0}else{acc+=d;px=q.x;py=q.y;k--}}
+for(;i<s.length;i++){s[i].x=px;s[i].y=py}
+if(k>40)T.splice(0,k-8)}
 function newBot(r) {
   const [x, y] = rp(500), a = rnd(0, 6.28);
   const b = { id: 'b' + (++r.nb), name: BN[Math.random() * BN.length | 0], ci: Math.random() * 8 | 0, pi: Math.random() * 9 | 0, m: rnd(15, 45), ang: a, tang: a, alive: 1, tmr: Math.random() * 15 | 0, tgt: null, tt: 0, segs: [], e: [], q: 0, ne: 0, isNew: 1, sent: 0, rt: 0 };
-  for (let i = 0; i < nseg(b); i++) b.segs.push({ x: x - Math.cos(a) * i * 4, y: y - Math.sin(a) * i * 4 });
+  for (let i = 0; i < nseg(b); i++) b.segs.push({ x: x - Math.cos(a) * i * rad(b) * .5, y: y - Math.sin(a) * i * rad(b) * .5 });
   return b;
 }
 function newPow(r) { let s = PK.reduce((t, p) => t + p[1], 0) * Math.random(), i = 0; while (i < PK.length - 1 && s > PK[i][1]) { s -= PK[i][1]; i++; } const q = rp(150); return { id: 'w' + (++r.np), x: Math.round(q[0]), y: Math.round(q[1]), k: PK[i][0] }; }
