@@ -16,7 +16,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:#fff;font-famil
 #lb{top:calc(10px + env(safe-area-inset-top,0px));right:10px;min-width:170px;max-width:46vw}
 #lb .r{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:1px 0}
 #lb .me{color:var(--ac);font-weight:700}
-#zm{left:10px;bottom:calc(130px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;padding:5px}#zm button{width:42px;height:42px;border-radius:50%;border:1px solid var(--ln);background:#0007;color:#fff;font-size:22px;font-weight:800;touch-action:manipulation;cursor:pointer;padding:0}#mm{border-radius:50%;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));width:110px;height:110px;padding:0}
+#zm{left:10px;bottom:calc(130px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;padding:5px}#zm button{width:46px;height:46px;border-radius:50%;border:1px solid var(--ln);background:#0007;color:#fff;font-size:22px;font-weight:800;touch-action:manipulation;cursor:pointer;padding:0}#mm{border-radius:50%;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));width:110px;height:110px;padding:0}
 #snd{bottom:calc(10px + env(safe-area-inset-bottom,0px));right:10px;cursor:pointer;color:#fff;font-size:18px}
 #bb{display:none;position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:104px;height:104px;border-radius:50%;border:4px solid #fff9;background:radial-gradient(circle,#ffd23f,#ff7a00);font-size:44px;touch-action:none;box-shadow:0 6px 18px #0009}
 body.tm #bb.on{display:block;bottom:calc(14px + env(safe-area-inset-bottom,0px));right:14px;width:92px;height:92px;font-size:38px}body.tm #snd{right:118px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}body.tm #lb{min-width:130px}body.tm #lb .r{font-size:12px}body.tm #hint{display:none}body.lf #bb{right:auto;left:14px}body.lf #mm{left:auto;right:10px}body.lf #snd{right:auto;left:118px}
@@ -69,7 +69,7 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 <canvas id="c"></canvas>
 <div id="hud" class="p hide g">Puntos<br><b id="sc">0</b><br><span id="rk"></span> · <span id="kl"></span><div id="pw" style="font-size:15px;min-height:20px;display:flex;gap:8px;flex-wrap:wrap"></div><div id="hint" style="font-size:11px;opacity:.7">Clic o espacio = ⚡ turbo · rueda o +/− = zoom</div></div>
 <div id="lb" class="p hide g"></div>
-<div id="zm" class="p hide g"><button id="zo" aria-label="Alejar">−</button><button id="zi" aria-label="Acercar">+</button></div>
+<div id="zm" class="p hide g"><button id="zo" aria-label="Alejar">−</button><span id="zl" style="align-self:center;min-width:38px;text-align:center;font-size:12px;font-weight:700">100%</span><button id="zi" aria-label="Acercar">+</button></div>
 <canvas id="mm" class="p hide g" width="120" height="120"></canvas>
 <div id="toast" style="position:fixed;top:22%;left:50%;transform:translateX(-50%);font-size:28px;font-weight:800;color:#ffd23f;text-shadow:0 3px 12px #000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap"></div>
 <button id="bb" aria-label="Turbo">⚡</button>
@@ -341,7 +341,7 @@ if(online){cellTick();if(tick%6==0&&state!=='menu')net()}else for(let k=0;k<3&&r
 for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.y-=.9;p.l-=.02;if(p.l<=0){pops[i]=pops[pops.length-1];pops.pop()}}
 for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vx*=.95;p.vy*=.95;p.l-=.03;if(p.l<=0){parts[i]=parts[parts.length-1];parts.pop()}}
 const f0=worms[0],hh=f0.segs[0],zq=Math.min(1,Math.max(0,(rad(f0)-10)/70)),zt=Math.max(.12,(1.75-1.5*Math.pow(zq,.6))*Math.max(.78,Math.min(1.2,Math.min(W,H)/700))*(f0.pw[2]>t?.65:1)*UZ);
-cam.x+=(hh.x-cam.x)*.12;cam.y+=(hh.y-cam.y)*.12;cam.z+=(zt-cam.z)*.03;
+cam.x+=(hh.x-cam.x)*.12;cam.y+=(hh.y-cam.y)*.12;cam.z+=(zt-cam.z)*.07;
 if(tick%3==0){rings();squeeze(3/60)}if(tick%30==0)for(const w of worms)if(w.wd&&w.wd.length)w.wd=w.wd.filter(q=>t-q.t<10);meta();if(state==='play'&&tick%10==0){hud()}}
 function hud(){const L=worms.filter(w=>w.alive).sort((a,b)=>b.m-a.m);rank=L.indexOf(me)+1;$('#sc').textContent=me.m|0;$('#rk').textContent='Puesto '+rank+'/'+worms.length;$('#kl').textContent='⚔ '+me.kills;{let hu=0,bo=0;if(online)for(const w of worms)if(w.rem&&w.alive){if(String(w.pid)[0]=='b')bo++;else hu++}$('#hint').textContent=online?'🌐 En línea · '+(hu+1)+' jugadores · '+bo+' IA':'Clic o espacio = ⚡ turbo';if(online&&act()){const t1=rank===1&&hu+1>=3;if(t1){if(!me.t1&&t-(me.t1t||-999)>60){me.t1t=t;addB(120);say2('👑 ¡Top 1! +2 min de temporada','#ffd23f',2200)}else addB(10/60)}me.t1=t1}}$('#pw').innerHTML=PW.map((e,k)=>me.pw[k]>t?'<span style="color:'+PWC[k]+'">'+e+' '+Math.ceil(me.pw[k]-t)+'s</span>':'').join('');
 $('#lb').innerHTML='<b>🏆 Clasificación</b>'+L.slice(0,tmOn()?5:10).map((w,i)=>'<div class="r'+(w===me?' me':'')+'"><span>'+(i+1)+'. '+esc(w.name)+'</span><b>'+(w.m|0)+'</b></div>').join('')+(rank>(tmOn()?5:10)?'<div class="r me"><span>'+rank+'. '+esc(me.name)+'</span><b>'+(me.m|0)+'</b></div>':'')}
@@ -516,11 +516,11 @@ function jend(e){if(e.pointerId===jp){jp=null;jyE.classList.add('hide')}}
 addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'&&joyOn()){if(e.pointerId===jp){const dx=e.clientX-jx,dy=e.clientY-jy0,d=Math.hypot(dx,dy);if(d>8){mouse.x=dx;mouse.y=dy}const k=d>50?50/d:1;jk.style.transform='translate('+dx*k+'px,'+dy*k+'px)'}return}mouse.x=e.clientX-W/2;mouse.y=e.clientY-H/2});
 cv.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'&&joyOn()){if(jp===null){jp=e.pointerId;jx=e.clientX;jy0=e.clientY;jyE.style.left=(jx-65)+'px';jyE.style.top=(jy0-65)+'px';jk.style.transform='translate(0,0)';jyE.classList.remove('hide')}return}mouse.x=e.clientX-W/2;mouse.y=e.clientY-H/2;if(e.pointerType==='mouse'&&e.button===0)md=1});
 addEventListener('pointerup',e=>{md=0;jend(e)});addEventListener('pointercancel',jend);addEventListener('blur',()=>{md=0;bk=0});
-let UZ=1;try{UZ=Math.min(2.6,Math.max(.8,parseFloat(localStorage.gx_uz)||1))}catch(x){}
-function setUZ(v){UZ=Math.min(2.6,Math.max(.8,v));try{localStorage.gx_uz=UZ}catch(x){}}
-addEventListener('wheel',e=>{if(state==='play'&&e.target===cv){e.preventDefault();setUZ(UZ*(e.deltaY<0?1.12:1/1.12))}},{passive:false});
-addEventListener('keydown',e=>{if(state!=='play'||/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))return;if(e.key==='+'||e.key==='='||e.code==='NumpadAdd')setUZ(UZ*1.15);else if(e.key==='-'||e.code==='NumpadSubtract')setUZ(UZ/1.15)});
-for(const[id,f]of[['#zi',1.2],['#zo',1/1.2]]){const b=$(id);b.addEventListener('pointerdown',e=>{e.stopPropagation()});b.addEventListener('click',e=>{e.stopPropagation();setUZ(UZ*f)})}
+let UZ=1;try{UZ=Math.min(4.5,Math.max(.8,parseFloat(localStorage.gx_uz)||1))}catch(x){}
+function setUZ(v){UZ=Math.min(4.5,Math.max(.8,v));try{localStorage.gx_uz=UZ}catch(x){}const l=$('#zl');if(l)l.textContent=Math.round(UZ*100)+'%'}
+setUZ(UZ);addEventListener('wheel',e=>{if(state==='play'&&!(e.target.closest&&e.target.closest('input,textarea,#over,#shop,#acc'))){e.preventDefault();setUZ(UZ*(e.deltaY<0?1.15:1/1.15))}},{passive:false});
+addEventListener('keydown',e=>{if(state!=='play'||/INPUT|TEXTAREA/.test((e.target||{}).tagName||''))return;if(e.key==='+'||e.key==='='||e.code==='NumpadAdd')setUZ(UZ*1.2);else if(e.key==='-'||e.code==='NumpadSubtract')setUZ(UZ/1.2)});
+for(const[id,f]of[['#zi',1.25],['#zo',1/1.25]]){const b=$(id);b.addEventListener('pointerdown',e=>{e.stopPropagation()});b.addEventListener('click',e=>{e.stopPropagation();setUZ(UZ*f)})}
 addEventListener('keydown',e=>{if(e.code==='Space'){bk=1;if(state==='play')e.preventDefault()}});addEventListener('keyup',e=>{if(e.code==='Space')bk=0});
 const bb=$('#bb');bb.addEventListener('pointerdown',e=>{e.stopPropagation();bk=1;if(CT.vib&&navigator.vibrate)try{navigator.vibrate(18)}catch(x){}});['pointerup','pointercancel','pointerleave'].forEach(n=>bb.addEventListener(n,()=>{bk=0}));
 addEventListener('contextmenu',e=>e.preventDefault());
