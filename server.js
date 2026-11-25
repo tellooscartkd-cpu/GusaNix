@@ -408,10 +408,10 @@ wss.on('connection', (ws, req) => {
         if (near(ve.bd.segs[0].x, ve.bd.segs[0].y, rad(ve.bd))) { ve.killedAt = now; send(ve.ws, { t: 'killed', by: ws.id }); }
         break;
       }
-      case 'mord': {   // mordisco: 3 mordiscos en la misma zona parten el cuerpo; cada uno quita 6% de masa
+      case 'mord': {   // mordisco: cada uno quita 6% de masa (ya no parte el cuerpo)
         const r = ws.room, e = r && r.peers.get(ws.id); if (!e || !e.g || !e.g.al || !e.bd || e.dead) return;
         const now = Date.now(); if (e.mordAt && now - e.mordAt < 600) return;
-        const id = String(m.v || ''), n = Math.max(1, Math.min(3, +m.n | 0)); let hh = e.bd.segs[0]; { const px = +m.x, py = +m.y; if (isFinite(px) && isFinite(py) && Math.hypot(px - hh.x, py - hh.y) < 450) hh = { x: px, y: py }; }
+        const id = String(m.v || ''), n = 1; let hh = e.bd.segs[0]; { const px = +m.x, py = +m.y; if (isFinite(px) && isFinite(py) && Math.hypot(px - hh.x, py - hh.y) < 450) hh = { x: px, y: py }; }
         const nearB = o => { const lim = rad(o) * .8 + rad(e.bd) * .7 + 100; for (let i = 0; i < o.segs.length; i += 2) { const q = o.segs[i], dx = hh.x - q.x, dy = hh.y - q.y; if (dx * dx + dy * dy < lim * lim) return true; } return false; };
         const bot = r.bots.find(b => b.id === id);
         if (bot) {

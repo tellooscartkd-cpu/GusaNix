@@ -97,7 +97,7 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 <h3>Controles</h3><p>💻 PC: mueve el mouse para girar; clic o barra espaciadora = ⚡ turbo.<br>📱 Celular: arrastra el dedo (aparece un joystick flotante) y mantén el botón ⚡ para correr. En 🎮 Controles puedes cambiar a modo zurdo, sensibilidad o toque directo.</p>
 <h3>Choques</h3><p>Si tu cabeza toca el cuerpo de otro gusano, caes. Si chocan de frente nadie gana ventaja y se decide con una regla justa: nunca mueren los dos. El que golpea de lado gana, sin importar el tamaño.</p>
 <h3>Estrangular 🌀</h3><p>Rodea a otro gusano con tu cuerpo y sigue girando: el anillo lo aplasta cada vez más hasta matarlo. Si se mantiene encerrado, muere; si sale a tiempo, se salva. Si choca contra tu anillo, te lo comes entero.</p>
-<h3>Poderes</h3><p>🌪️ Giro (giras mucho más) · ⚡ Velocidad · 🌀 Aspiradora (comida y poderes) · 🔍 Lupa · ✨ x2 (20 s) · 🌟 x5 (15 s) · 💎 x10 (10 s) · 🌻 Jardín · 🎁 Piñata · 🛡️ Escudo (absorbe un golpe) · 🖐️ Manos (saltas un cuerpo) · 🦷 Mordisco (solo en modo solo).</p>
+<h3>Poderes</h3><p>🌪️ Giro (giras mucho más) · ⚡ Velocidad · 🌀 Aspiradora (comida y poderes) · 🔍 Lupa · ✨ x2 (20 s) · 🌟 x5 (15 s) · 💎 x10 (10 s) · 🌻 Jardín · 🎁 Piñata · 🛡️ Escudo (rebotas y sacas chispas) · 🖐️ Manos (saltas un cuerpo) · 🦷 Mordisco (solo en modo solo).</p>
 <h3>Temporadas</h3><p>Cada mes hay una temporada. Juega 4 horas en total durante el mes para ganar la piel exclusiva. Online, ser top 1 te da tiempo extra.</p>
 <button class="btn" id="howx">Entendido</button></div></div>
 <div id="ctl" class="scr hide"><div class="card"><h1 style="font-size:30px">Controles</h1>
@@ -151,7 +151,7 @@ else{g.rotate(-.5);g.strokeStyle='#8a6b00';g.lineWidth=17;g.beginPath();g.arc(0,
 return c}
 const spr=EMO.map((e,k)=>foodSpr(k));
 
-const PW=['⚡','🌀','🔍','✨','🌟','💎','🌻','🎁','🛡️','🖐️','🦷','🌪️'],PWN=['Velocidad','Aspiradora','Lupa','Puntos x2','Puntos x5','Puntos x10','Jardín','Piñata','Escudo','Manos','Mordisco','Giro'],PWC=['#ffd23f','#4cc9f0','#80ed99','#c77dff','#ff9f1c','#ff3d9a','#ffb703','#ff4d8d','#aab4c2','#f4a261','#ff6b6b','#5eead4'],PWD=['Corres más rápido unos segundos.','Absorbe comida y también orbes de poder cercanos.','Ves más mapa a tu alrededor.','Cada comida vale el doble (20 s).','Cada comida vale x5 (15 s).','Cada comida vale x10 (10 s).','Siembras comida por donde pasas.','Lluvia de comida a tu alrededor.','Un escudo de placas: absorbe un golpe de cuerpo (8 s).','Saltas automáticamente por encima de un cuerpo (una vez, 8 s).','Muerdes cuerpos: quitas pedazos. A la 3.ª mordida en el mismo sitio lo partes.'],pows=[],pops=[],pspr=PW.map(e=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.font='44px serif';g.textAlign='center';g.textBaseline='middle';g.fillText(e,32,35);return c});
+const PW=['⚡','🌀','🔍','✨','🌟','💎','🌻','🎁','🛡️','🖐️','🦷','🌪️'],PWN=['Velocidad','Aspiradora','Lupa','Puntos x2','Puntos x5','Puntos x10','Jardín','Piñata','Escudo','Manos','Mordisco','Giro'],PWC=['#ffd23f','#4cc9f0','#80ed99','#c77dff','#ff9f1c','#ff3d9a','#ffb703','#ff4d8d','#aab4c2','#f4a261','#ff6b6b','#5eead4'],PWD=['Corres más rápido unos segundos.','Absorbe comida y también orbes de poder cercanos.','Ves más mapa a tu alrededor.','Cada comida vale el doble (20 s).','Cada comida vale x5 (15 s).','Cada comida vale x10 (10 s).','Siembras comida por donde pasas.','Lluvia de comida a tu alrededor.','Escudo de placas (8 s): no puedes atravesar a nadie; chocas, sacas chispas y rebotas.','Saltas automáticamente por encima de un cuerpo (una vez, 8 s).','Muerdes cuerpos: les quitas pedacitos de masa (no los partes).'],pows=[],pops=[],pspr=PW.map(e=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.font='44px serif';g.textAlign='center';g.textBaseline='middle';g.fillText(e,32,35);return c});
 function pk(){const w=[3,3,3,3,1.5,.7,1,1,1.5,1,.35,1.3];let r=Math.random()*(w.reduce((a,b)=>a+b,0)),i=0;while(i<11&&r>w[i]){r-=w[i];i++}return i}
 const DUR={11:12,1:12,3:20,4:15,5:10,8:8,9:8};
 function say2(tx,col,ms){const e=$('#toast');e.textContent=tx;e.style.color=col||'#ffd23f';e.style.opacity=1;clearTimeout(flash.h);flash.h=setTimeout(()=>e.style.opacity=0,ms||1500)}
@@ -299,19 +299,26 @@ function angd(a,b){return Math.atan2(Math.sin(a-b),Math.cos(a-b))}
 function loses(a,b){const A=a.segs[0],B=b.segs[0],g=Math.atan2(B.y-A.y,B.x-A.x),ga=Math.abs(angd(a.ang,g)),gb=Math.abs(angd(b.ang,g+Math.PI));if(Math.abs(ga-gb)>=.349)return ga>gb;const ia=String(a.pid||a.uid),ib=String(b.pid||b.uid),k=(ia<ib?ia+'|'+ib:ib+'|'+ia)+Math.round((A.x+B.x)/1000)+Math.round((A.y+B.y)/1000);let s=0;for(let i=0;i<k.length;i++)s=(s*31+k.charCodeAt(i))>>>0;return (s&1)?ia<ib:ia>=ib}
 let claimT={};let hitT={};function hitReq(o){if(!ws||(hitT[o.pid]||0)>t)return;hitT[o.pid]=t+.4;send({t:'hit',v:o.pid})}
 function claim(o){if(!online||!ws||!o.pid||(claimT[o.pid]||0)>t||o.pw[10]>t)return;claimT[o.pid]=t+1.2;send({t:'claim',v:o.pid})}
+function bounce(w,o,i){const h=w.segs[0],k=Math.min(i,o.segs.length-1),c=o.segs[k],lim=rad(w)*.7+rad(o)*.8;let dx=h.x-c.x,dy=h.y-c.y,nx,ny,tp=0;
+const nb=o.segs[k>0?k-1:Math.min(1,o.segs.length-1)];let tx=nb.x-c.x,ty=nb.y-c.y;const tl=Math.hypot(tx,ty);
+if(k>0&&tl>.01){tx/=tl;ty/=tl;nx=-ty;ny=tx;tp=dx*tx+dy*ty;const sd=dx*nx+dy*ny;if(sd<0||(Math.abs(sd)<.5&&nx*Math.cos(w.ang)+ny*Math.sin(w.ang)>0)){nx=-nx;ny=-ny}h.x=c.x+tx*tp+nx*(lim+6);h.y=c.y+ty*tp+ny*(lim+6)}
+else{const d0=Math.hypot(dx,dy);nx=d0>.5?dx/d0:-Math.cos(w.ang);ny=d0>.5?dy/d0:-Math.sin(w.ang);if(d0<lim+6){h.x=c.x+nx*(lim+6);h.y=c.y+ny*(lim+6)}}
+const d=lim;
+let vx=Math.cos(w.ang),vy=Math.sin(w.ang);const dp=vx*nx+vy*ny;if(dp<0){vx-=2*dp*nx;vy-=2*dp*ny}else{vx=nx;vy=ny}
+w.ang=Math.atan2(vy,vx);w.tang=w.ang;
+if((w.shT||0)>t)return;w.shT=t+.12;const px=c.x+nx*lim*.5,py=c.y+ny*lim*.5;
+burst(px,py,'#ffe27a',10,6);burst(px,py,'#ffffff',6,8);if(w===me||o===me){beep(rnd(900,1400),.05,'square',.04);if((w.shm||0)<t){w.shm=t+1.2;say2('🛡️ ¡Choque! Rebotas','#cfd6e0',700)}}}
 function surv(w,o,i,hd){
 if(w.pw[10]>t&&!hd&&i>1){chomp(w,o,i);return true}
 if(w.imm>t)return true;
-if(w.pw[8]>t){w.pw[8]=0;w.imm=t+.9;if(w===me){burst(w.segs[0].x,w.segs[0].y,'#cfd6e0',26,5);beep(300,.12,'square',.05);say2('🛡️ ¡El escudo te salvó!','#aab4c2')}return true}
+if(w.pw[8]>t){bounce(w,o,hd?0:i);return true}
 if(w.pw[9]>t){w.pw[9]=0;w.hop=t+.6;w.imm=t+.9;if(w===me){burst(w.segs[0].x,w.segs[0].y,'#f4a261',18,3);beep(520,.1,'triangle');say2('🖐️ ¡Saltaste!','#f4a261')}return true}
 return false}
 function chomp(w,o,i){if(w.bt>t)return;w.bt=t+.8;
-if(online&&w===me&&o.rem&&o.pid){o.wd=o.wd||[];let q=o.wd.find(x=>Math.abs(x.i-i)<=8);if(!q){q={i,n:0,t:0};o.wd.push(q)}q.n++;q.t=t;q.i=i;const si=Math.min(i,o.segs.length-1),sg=o.segs[si];send({t:'mord',v:o.pid,i:Math.max(2,si),n:q.n,x:Math.round(w.segs[0].x),y:Math.round(w.segs[0].y)});
-if(q.n>=3){o.wd.splice(o.wd.indexOf(q),1);bite(w,o,Math.max(2,si));say2('🦷 ¡Lo partiste!','#ff6b6b');beep(120,.25,'sawtooth',.06);return}
-const loss=Math.max(1,o.m*.06);for(let j=0;j<3;j++)addFood(sg.x+rnd(-14,14),sg.y+rnd(-14,14),o.ci,loss/3,1);burst(sg.x,sg.y,'#ff3b3b',16,4);beep(200,.1,'sawtooth',.05);say2('🦷 ¡Mordisco! ('+q.n+'/3)','#ff6b6b',900);return}
+if(online&&w===me&&o.rem&&o.pid){o.wd=o.wd||[];let q=o.wd.find(x=>Math.abs(x.i-i)<=8);if(!q){q={i,n:0,t:0};o.wd.push(q)}q.n++;q.t=t;q.i=i;const si=Math.min(i,o.segs.length-1),sg=o.segs[si];send({t:'mord',v:o.pid,i:Math.max(2,si),n:1,x:Math.round(w.segs[0].x),y:Math.round(w.segs[0].y)});
+const loss=Math.max(1,o.m*.06);for(let j=0;j<3;j++)addFood(sg.x+rnd(-14,14),sg.y+rnd(-14,14),o.ci,loss/3,1);burst(sg.x,sg.y,'#ff3b3b',16,4);beep(200,.1,'sawtooth',.05);say2('🦷 ¡Mordisco!','#ff6b6b',900);return}
 o.wd=o.wd||[];let q=o.wd.find(x=>Math.abs(x.i-i)<=8);if(!q){q={i,n:0,t:0};o.wd.push(q)}q.n++;q.t=t;q.i=i;const sg=o.segs[Math.min(i,o.segs.length-1)];
-if(q.n>=3){o.wd.splice(o.wd.indexOf(q),1);bite(w,o,Math.max(2,Math.min(i,o.segs.length-1)));if(w===me){say2('🦷 ¡Lo partiste!','#ff6b6b');beep(120,.25,'sawtooth',.06)}return}
-const loss=Math.max(1,o.m*.06);o.m=Math.max(10,o.m-loss);for(let j=0;j<3;j++)addFood(sg.x+rnd(-14,14),sg.y+rnd(-14,14),o.ci,loss/3,1);burst(sg.x,sg.y,'#ff3b3b',16,4);if(w===me){beep(200,.1,'sawtooth',.05);say2('🦷 ¡Mordisco! ('+q.n+'/3)','#ff6b6b',900)}}
+const loss=Math.max(1,o.m*.06);o.m=Math.max(10,o.m-loss);for(let j=0;j<3;j++)addFood(sg.x+rnd(-14,14),sg.y+rnd(-14,14),o.ci,loss/3,1);burst(sg.x,sg.y,'#ff3b3b',16,4);if(w===me){beep(200,.1,'sawtooth',.05);say2('🦷 ¡Mordisco!','#ff6b6b',900)}}
 function inPoly(s,n,x,y){let c=false;for(let i=0,j=n;i<=n;j=i++){const a=s[i],b=s[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)c=!c}return c}
 function rings(){for(const w of worms){w.rg=0;if(!w.alive)continue;const sg=w.segs,h=sg[0],lim=(rad(w)*2.6)**2;for(let i=Math.min(14,sg.length);i<sg.length;i+=2){const dx=h.x-sg[i].x,dy=h.y-sg[i].y;if(dx*dx+dy*dy<lim){w.rg=i;break}}}
 for(const o of worms){o.tn=null;o.ring=0}
