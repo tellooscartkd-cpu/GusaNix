@@ -33,6 +33,7 @@ function fail(ip) { const f = fails[ip] = fails[ip] && Date.now() - fails[ip].t 
 // Correo: RESEND_KEY + MAIL_FROM (resend.com).  SMS: TWILIO_SID + TWILIO_TOKEN + TWILIO_FROM (twilio.com).
 // Sin claves: el código sale solo en la consola del servidor (modo pruebas; GX_DEV=1 lo devuelve también al cliente).
 const https = require('https');
+process.on('uncaughtException', e => console.log('Excepción no controlada:', e && e.stack || e));
 process.on('unhandledRejection', e => console.log('Error no controlado:', e && e.message));
 const CODES = {}, sendLog = {};
 const normCt = s => { s = String(s || '').trim(); if (/^[^\s@]{1,64}@[^\s@]{1,190}\.[A-Za-z]{2,}$/.test(s) && s.length <= 254) return { k: 'e', v: s.toLowerCase() }; const d = s.replace(/[^\d+]/g, ''); if (/^\+\d{8,15}$/.test(d)) return { k: 'p', v: d }; return null; };
@@ -163,9 +164,9 @@ function aiB(r, b, now, W) {
     if (d2 < 520 * 520 && !(b.hunt && b.hunt.o === o)) { const d = Math.sqrt(d2) || 1, k = (1 - d / 520) * 1.1; vx += dx / d * k; vy += dy / d * k; }
   }
   for (const o of W) {
-    if (o === b) continue; const or = rad(o), oh = o.segs[0], D = rr + or + 110, reach = o.segs.length * or * .5 + D;
+    if (o === b) continue; const or = rad(o), oh = o.segs[0], D = rr + or + 50, reach = o.segs.length * or * .5 + D;
     if (Math.abs(h.x - oh.x) > reach || Math.abs(h.y - oh.y) > reach) continue;
-    for (let i = 0; i < o.segs.length; i += 2) { const s = o.segs[i], dx = h.x - s.x, dy = h.y - s.y, d2 = dx * dx + dy * dy; if (d2 < D * D) { const d = Math.sqrt(d2) || 1, k = (1 - d / D) * (1 - d / D) * 6; vx += dx / d * k; vy += dy / d * k; } }
+    for (let i = 0; i < o.segs.length; i += 2) { const s = o.segs[i], dx = h.x - s.x, dy = h.y - s.y, d2 = dx * dx + dy * dy; if (d2 < D * D) { const d = Math.sqrt(d2) || 1, k = (1 - d / D) * (1 - d / D) * 3.2; vx += dx / d * k; vy += dy / d * k; } }
   }
   b.tang = Math.atan2(vy, vx);
 }
@@ -472,6 +473,8 @@ wss.on('connection', (ws, req) => {
       case 'leave': leave(ws); break;
     }
   });
+  ws.on('error', () => {});
+  ws.alive = true; ws.on('pong', () => { ws.alive = true; });
   ws.on('close', () => { leave(ws); if (ws.u && online.get(ws.u) === ws) online.delete(ws.u); });
   ws.on('error', () => {});
 });
@@ -481,4 +484,6 @@ setInterval(() => {
   for (const r of rooms) { try { simulate(r, now); if ((++r.tk) % 2 === 0) bcast(r); } catch (e) { console.error(e); } }
 }, 50);
 
+wss.on('error', e => console.log('wss error:', e && e.message)); server.on('error', e => console.log('http error:', e && e.message));
+setInterval(() => { for (const c of wss.clients) { if (c.alive === false) { try { c.terminate(); } catch (e) {} continue; } c.alive = false; try { c.ping(); } catch (e) {} } }, 30000).unref();
 server.listen(PORT, () => console.log('Gusanix en el puerto ' + PORT));

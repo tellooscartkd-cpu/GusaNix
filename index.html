@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gusanix · Arena de gusanos</title>
 <style>
@@ -17,6 +18,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:#fff;font-famil
 #lb .r{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:1px 0}
 #lb .me{color:var(--ac);font-weight:700}
 #zm{left:10px;bottom:calc(130px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;padding:5px}#zm button{width:46px;height:46px;border-radius:50%;border:1px solid var(--ln);background:#0007;color:#fff;font-size:22px;font-weight:800;touch-action:manipulation;cursor:pointer;padding:0}#mm{border-radius:50%;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));width:110px;height:110px;padding:0}
+#fsb,#fsw{cursor:pointer;color:#fff;font-size:18px}#fsb{bottom:calc(10px + env(safe-area-inset-bottom,0px));right:58px}#fsw{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:10px;z-index:30;width:42px;height:42px;border-radius:50%;border:1px solid var(--ln);background:#0007;padding:0}body.tm #fsb{right:172px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}#wel.hide~#fsw,#acc:not(.hide)~#fsw{display:none}
 #snd{bottom:calc(10px + env(safe-area-inset-bottom,0px));right:10px;cursor:pointer;color:#fff;font-size:18px}
 #bb{display:none;position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:104px;height:104px;border-radius:50%;border:4px solid #fff9;background:radial-gradient(circle,#ffd23f,#ff7a00);font-size:44px;touch-action:none;box-shadow:0 6px 18px #0009}
 body.tm #bb.on{display:block;bottom:calc(14px + env(safe-area-inset-bottom,0px));right:14px;width:92px;height:92px;font-size:38px}body.tm #snd{right:118px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}body.tm #lb{min-width:130px}body.tm #lb .r{font-size:12px}body.tm #hint{display:none}body.lf #bb{right:auto;left:14px}body.lf #mm{left:auto;right:10px}body.lf #snd{right:auto;left:118px}
@@ -79,13 +81,13 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 :focus-visible{outline:3px solid var(--ac);outline-offset:2px}
 </style></head><body>
 <canvas id="c"></canvas>
-<div id="hud" class="p hide g">Puntos<br><b id="sc">0</b><br><span id="rk"></span> · <span id="kl"></span><div id="pw" style="font-size:15px;min-height:20px;display:flex;gap:8px;flex-wrap:wrap"></div><div id="hint" style="font-size:11px;opacity:.7">Clic o espacio = ⚡ turbo · rueda o +/− = zoom</div></div>
+<div id="hud" class="p hide g">Puntos<br><b id="sc">0</b><br><span id="rk"></span> · <span id="kl"></span><div id="pw" style="font-size:15px;min-height:20px;display:flex;gap:8px;flex-wrap:wrap"></div><div id="hint" style="font-size:11px;opacity:.7">Clic o espacio = ⚡ turbo · rueda o +/− = zoom · F = pantalla completa</div></div>
 <div id="lb" class="p hide g"></div>
 <div id="zm" class="p hide g"><button id="zo" aria-label="Alejar">−</button><span id="zl" style="align-self:center;min-width:38px;text-align:center;font-size:12px;font-weight:700">100%</span><button id="zi" aria-label="Acercar">+</button></div>
 <canvas id="mm" class="p hide g" width="120" height="120"></canvas>
 <div id="toast" style="position:fixed;top:22%;left:50%;transform:translateX(-50%);font-size:28px;font-weight:800;color:#ffd23f;text-shadow:0 3px 12px #000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap"></div>
 <button id="bb" aria-label="Turbo">⚡</button>
-<button id="snd" class="p" aria-label="Sonido">🔊</button>
+<button id="snd" class="p" aria-label="Sonido">🔊</button><button id="fsb" class="p" aria-label="Pantalla completa">⛶</button>
 <div id="jy" class="hide"><i></i></div><div id="tut" class="hide"><span id="tutx"></span><button id="tuts">Omitir</button></div>
 <div id="wel" class="scr hide"><canvas id="wh"></canvas><div class="wbox"><h1 id="wt" aria-label="GUSANIX"></h1><div class="wsub">Arena de gusanos · comida colombiana</div><div id="wmsg" class="wsub" style="color:#ffd23f;margin:6px 0 0"></div><div id="whi" class="wsub hide"></div><div id="wseas"></div>
 <button class="btn" id="wg">▶ Jugar</button>
@@ -112,6 +114,7 @@ input{width:100%;padding:11px 14px;border-radius:14px;border:2px solid var(--ln)
 <div class="sub" id="gain" style="color:#ffd23f;font-weight:700"></div><div class="sub" id="best"></div>
 <button class="btn" id="again">Jugar de nuevo</button><button class="btn s" id="tohome">🏠 Inicio</button><button class="btn s" id="shopo">🛍️ Tienda y temporada</button>
 </div></div>
+<button id="fsw" aria-label="Pantalla completa">⛶</button>
 <div id="shop" class="scr hide"><div class="card" style="width:min(560px,100%);text-align:left"><div style="display:flex;justify-content:space-between;align-items:center"><h1 style="font-size:32px">Tienda</h1><b id="coins" style="font-size:20px"></b></div><div id="mylook"><div class="rt" style="color:#fff;font-size:18px">🐛 Mi gusano</div><div id="wal"></div><canvas id="pv" width="280" height="96"></canvas><input id="nm" maxlength="12" placeholder="Nombre de tu gusano" autocomplete="off"><div class="lab">Color</div><div id="sw"></div></div>
 <div id="season"></div><div id="grid"></div><div id="bkp"></div><div class="wrow" style="margin-top:14px"><button class="btn s" id="accb">👤 Cuenta</button></div><div class="wrow" style="margin-top:8px"><button class="btn s" id="howb">❓ Cómo se juega</button><button class="btn s" id="ctlb">🎮 Controles</button></div><button class="btn s" id="shopx">Volver</button></div></div>
 <div id="acc" class="scr hide"><div class="card"><h1 id="at" class="t3d">Cuenta</h1><div id="asb" class="sub" style="margin:2px 0 12px"></div>
@@ -195,7 +198,7 @@ const SHIM={peers:()=>Object.values(peerMap),presence:o=>{send({t:'p',g:o.g});re
 function wsURL(){return SERVER||((location.protocol==='https:'?'wss://':'ws://')+location.host)}
 function send(m){if(ws&&ws.readyState===1)ws.send(JSON.stringify(m))}
 function req(m){return new Promise(r=>{pend.push(r);send(m)})}
-function connect(){if(wsReady)return wsReady;wsReady=new Promise((res,rej)=>{let s;try{s=new WebSocket(wsURL())}catch(e){wsReady=null;rej(e);return}ws=s;s.onopen=()=>res();s.onerror=()=>{if(ws===s){wsReady=null;ws=null}rej(new Error('ws'))};s.onclose=()=>{if(ws===s){wsReady=null;ws=null;pend.splice(0).forEach(r=>r({t:'err',m:'Conexión perdida'}));if(online){toHome();say('Conexión perdida con el servidor.')}}};s.onmessage=e=>{try{onMsg(JSON.parse(e.data))}catch(x){}}});return wsReady}
+function connect(){if(wsReady)return wsReady;wsReady=new Promise((res,rej)=>{let s;try{s=new WebSocket(wsURL())}catch(e){wsReady=null;rej(e);return}ws=s;s.onopen=()=>res();s.onerror=()=>{if(ws===s){wsReady=null;ws=null;if(online&&state==='play')setTimeout(rejoin,0)}rej(new Error('ws'))};s.onclose=()=>{if(ws===s){wsReady=null;ws=null;pend.splice(0).forEach(r=>r({t:'err',m:'Conexión perdida'}));if(online){if(state==='play')rejoin();else{toHome();say('Conexión perdida con el servidor.')}}}};s.onmessage=e=>{try{onMsg(JSON.parse(e.data))}catch(x){}}});return wsReady}
 function onMsg(m){
 if(m.t=='authed'||m.t=='err'||m.t=='ctr'||m.t=='rqr'){const r=pend.shift();if(r)r(m);else if(m.t=='err'){if(online)toHome();say(m.m)}return}
 if(m.t=='cut'){if(online&&me&&me.alive&&me.segs.length>6){bite(null,me,Math.max(4,Math.min(+m.i||6,me.segs.length-1)));say2('💥 ¡Te rompieron el cuerpo!','#ff6b6b')}return}
@@ -254,6 +257,12 @@ if(!g.al){if(w.alive){w.alive=0;if(Array.isArray(g.d))dropNet(p.peer,g.d.slice(0
 w.tx=+g.x||0;w.ty=+g.y||0;w.ta=+g.a||0;w.m=Math.min(5000,Math.max(10,+g.m||10));w.boost=g.b?1:0;w.pw[10]=g.ch?t+.6:0;if(Array.isArray(g.e))for(const x of g.e){const id=x[0],q=+x[1];if(q>w.lq){w.lq=q;const f=fm[id];if(f){const i=foods.indexOf(f);if(i>=0)rmFood(i)}}}}
 for(const p of ch.left||[]){const w=rem[p.peer];if(w){w.alive=0;delete rem[p.peer]}}
 worms=worms.filter(w=>w.alive||!w.rem)}catch(e){}}
+let rcBusy=false;
+async function rejoin(){if(rcBusy||!online)return;rcBusy=true;
+for(let k=0;k<7&&online;k++){say2('🔄 Reconectando…','#ffd23f',2500);await new Promise(r=>setTimeout(r,k?1500+k*900:500));if(!online)break;
+try{await connect();const m=await req({t:'tok',tok});if(m.t!='authed')break;ws.au=1;room=SHIM;send({t:'join'});online=true;rcBusy=false;play();return}catch(e){}}
+rcBusy=false;if(online){toHome();say('Conexión perdida con el servidor.')}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&online&&state==='play'&&(!ws||ws.readyState>1))rejoin()});
 async function goOnline(){if(!user){goAfter=true;atab=0;openAcc();$('#am').textContent='Crea una cuenta o inicia sesión para jugar en línea.';return}try{await connect();const m=await req({t:'tok',tok});if(m.t!='authed'){user=null;acct='';accUI();openAcc();$('#am').textContent='Tu sesión venció. Entra de nuevo.';return}ws.au=1}catch(e){say('No se pudo conectar al servidor.');return}room=SHIM;send({t:'join'});online=true;play()}
 $('#onl').onclick=goOnline;
 function bkH(j){let h=7;for(let i=0;i<j.length;i++)h=(h*31+j.charCodeAt(i))>>>0;return h.toString(36)}
@@ -346,7 +355,7 @@ if(!w.tgt||w.tgt.dead||w.tmr%45==0){let b=-1,bf=null;for(const f of foods){if(f.
 const tg=w.tgt;let vx=Math.cos(w.ang)*.3,vy=Math.sin(w.ang)*.3;
 if(tg){const dx=tg.x-h.x,dy=tg.y-h.y,d=Math.hypot(dx,dy)||1;vx+=dx/d;vy+=dy/d}
 const M=170;{const dx=h.x-C,dy=h.y-C,d=Math.hypot(dx,dy)||1,e=R-d;if(e<M){const k=(1-e/M)*3;vx-=dx/d*k;vy-=dy/d*k}}
-for(const o of worms){if(o===w||!o.alive)continue;const or=rad(o),oh=o.segs[0],D=r+or+110,reach=o.segs.length*or*.5+D;if(Math.abs(h.x-oh.x)>reach||Math.abs(h.y-oh.y)>reach)continue;for(let i=0;i<o.segs.length;i+=2){const s=o.segs[i],dx=h.x-s.x,dy=h.y-s.y,d2=dx*dx+dy*dy;if(d2<D*D){const d=Math.sqrt(d2)||1,k=(1-d/D)*(1-d/D)*6;vx+=dx/d*k;vy+=dy/d*k}}}
+for(const o of worms){if(o===w||!o.alive)continue;const or=rad(o),oh=o.segs[0],D=r+or+50,reach=o.segs.length*or*.5+D;if(Math.abs(h.x-oh.x)>reach||Math.abs(h.y-oh.y)>reach)continue;for(let i=0;i<o.segs.length;i+=2){const s=o.segs[i],dx=h.x-s.x,dy=h.y-s.y,d2=dx*dx+dy*dy;if(d2<D*D){const d=Math.sqrt(d2)||1,k=(1-d/D)*(1-d/D)*3.2;vx+=dx/d*k;vy+=dy/d*k}}}
 w.tang=Math.atan2(vy,vx);
 w.boost=tg&&tg.dr&&w.m>50&&Math.hypot(tg.x-h.x,tg.y-h.y)<350?1:0}
 function step(){t+=1/60;tick++;for(const p of pows)if(Math.hypot(p.x-C,p.y-C)>R-150){const q=rp(150);p.x=q[0];p.y=q[1]}
@@ -524,6 +533,16 @@ function tutTick(){if(state!=='play'||!me||!me.alive){return}const h=me.segs[0];
 $('#tuts').onclick=tutEnd;
 function menu(){if(online&&room){try{room.presence({g:null}).catch(()=>{})}catch(e){}}online=false;state='menu';me=null;resetWorld(0);show(false);ui()}
 $('#go').onclick=play;$('#again').onclick=play;$('#shopb').onclick=openShop;$('#shopo').onclick=()=>{menu();openShop()};$('#shopx').onclick=closeShop;
+
+const FSE=document.documentElement,FSOK=!!(FSE.requestFullscreen||FSE.webkitRequestFullscreen);
+function isFS(){return !!(document.fullscreenElement||document.webkitFullscreenElement)}
+function toggleFS(){try{if(isFS()){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}else{const p=(FSE.requestFullscreen||FSE.webkitRequestFullscreen).call(FSE,{navigationUI:'hide'});p&&p.catch&&p.catch(()=>{})}}catch(e){}}
+function fsUI(){for(const id of['#fsb','#fsw']){const b=$(id);if(!b)continue;b.style.display=FSOK?'':'none';b.textContent=isFS()?'🗗':'⛶'}}
+for(const id of['#fsb','#fsw'])$(id).addEventListener('click',e=>{e.stopPropagation();toggleFS()});
+$('#fsb').addEventListener('pointerdown',e=>e.stopPropagation());
+document.addEventListener('fullscreenchange',()=>{fsUI();dispatchEvent(new Event('resize'))});document.addEventListener('webkitfullscreenchange',()=>{fsUI();dispatchEvent(new Event('resize'))});
+addEventListener('keydown',e=>{if((e.key==='f'||e.key==='F')&&state==='play'&&!/INPUT|TEXTAREA/.test((e.target||{}).tagName||'')&&!e.ctrlKey&&!e.metaKey)toggleFS()});
+fsUI();
 $('#snd').onclick=()=>{sound=!sound;$('#snd').textContent=sound?'🔊':'🔇'};
 $('#nm').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')play()});
 const CT=Object.assign({mode:'auto',lefty:0,sens:1,vib:1},(()=>{try{return JSON.parse(localStorage.getItem('gusanix_ctrl')||'{}')}catch(e){return{}}})());
